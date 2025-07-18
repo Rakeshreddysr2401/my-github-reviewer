@@ -1,5 +1,5 @@
 name: "My Code Reviewer"
-description: "This GitHub Action automatically reviews PRs using OpenAI gpt models."
+description: "This GitHub Action automatically reviews PRs using OpenAI gpt models.."
 author: 'Rakeshreddysr2401'
 
 inputs:
