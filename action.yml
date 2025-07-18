@@ -1,0 +1,27 @@
+name: "GitHub PR Reviewer"
+description: "Reviews pull requests using OpenAI"
+inputs:
+  openai_api_key:
+    description: "Your OpenAI API Key"
+    required: true
+  github_token:
+    description: "GitHub token to access repo and comment"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+
+    - name: Run PR reviewer script
+      run: python ${{ github.action_path }}/main.py
+      shell: bash
+      env:
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
