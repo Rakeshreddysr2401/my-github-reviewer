@@ -1,47 +1,32 @@
-# === Python Bytecode ===
-__pycache__/
-*.py[cod]
-*$py.class
-
-# === Virtual Environment ===
-venv/
+# Ignore virtual envs
 .venv/
+venv/
+env/
 
-# === Environment Variables / Secrets ===
-.env
-*.env
-
-# === Logs ===
-*.log
-logs/
-
-# === Pytest Cache ===
-.pytest_cache/
-
-# === MyPy, Coverage, Profiling ===
-.mypy_cache/
-coverage.*
-htmlcov/
-.cache/
-.prof
-
-# === Build Artifacts ===
-build/
-dist/
-*.egg-info/
-*.egg
-
-# === IDE Specific ===
+# Ignore git and IDE configs
+.git/
 .vscode/
 .idea/
 
-# === OS Specific ===
-.DS_Store
-Thumbs.db
+# Ignore caches and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.so
+*.egg-info/
 
-# === Jupyter Notebooks (optional) ===
+# Ignore notebooks checkpoints
 .ipynb_checkpoints/
 
-# === Local DB / Misc (optional) ===
+# Ignore secrets
+.env
+.env.*
+
+# Ignore local DBs and logs
+*.log
 *.sqlite3
 *.db
+*.pid
+
+# macOS stuff
+.DS_Store
