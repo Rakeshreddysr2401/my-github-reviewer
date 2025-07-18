@@ -1,0 +1,47 @@
+# === Python Bytecode ===
+__pycache__/
+*.py[cod]
+*$py.class
+
+# === Virtual Environment ===
+venv/
+.venv/
+
+# === Environment Variables / Secrets ===
+.env
+*.env
+
+# === Logs ===
+*.log
+logs/
+
+# === Pytest Cache ===
+.pytest_cache/
+
+# === MyPy, Coverage, Profiling ===
+.mypy_cache/
+coverage.*
+htmlcov/
+.cache/
+.prof
+
+# === Build Artifacts ===
+build/
+dist/
+*.egg-info/
+*.egg
+
+# === IDE Specific ===
+.vscode/
+.idea/
+
+# === OS Specific ===
+.DS_Store
+Thumbs.db
+
+# === Jupyter Notebooks (optional) ===
+.ipynb_checkpoints/
+
+# === Local DB / Misc (optional) ===
+*.sqlite3
+*.db

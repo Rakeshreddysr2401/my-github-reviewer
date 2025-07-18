@@ -1,0 +1,60 @@
+name: My Code Reviewer
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions: write-all
+
+jobs:
+  claude-code-review:
+    runs-on: ubuntu-latest
+    if: github.event.label.name == 'code-review'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Verify BeautifulSoup installation
+          pip list | grep -i beautiful
+          python -c "import sys; print(sys.path)"
+
+      - name: Test BS4 Import
+        run: |
+          python -c "from bs4 import BeautifulSoup; print('BS4 import successful')"
+
+      - name: Debug Info
+        run: |
+          echo "PR Number: ${{ github.event.pull_request.number }}"
+          echo "Base SHA: ${{ github.event.pull_request.base.sha }}"
+          echo "Head SHA: ${{ github.event.pull_request.head.sha }}"
+          git diff ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- '*.vue'
+
+      - name: Run My Github Code Reviewer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4o-mini
+          INPUT_EXCLUDE: "*.md,*.txt,package-lock.json,*.yml,*.yaml"
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          DEBUG: "true"
+          # Confluence integration for auto-refreshing guidelines
+          JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          # Configure guidelines refresh interval (days)
+          REFRESH_INTERVAL_DAYS: "7"
+        run: |
+          python main.py
+

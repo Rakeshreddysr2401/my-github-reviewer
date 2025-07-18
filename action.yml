@@ -1,0 +1,46 @@
+name: "My Code Reviewer"
+description: "This GitHub Action automatically reviews PRs using OpenAI gpt models."
+author: 'Rakeshreddysr2401'
+
+inputs:
+  GITHUB_TOKEN:
+    description: 'GitHub token to interact with the repository'
+    required: true
+  OPENAI_API_KEY:
+    description: 'OpenAI API key'
+    required: true
+  OPENAI_MODEL:
+    description: 'The OpenAI model to use for code review'
+    required: false
+    default: 'gpt-4o-mini'
+  EXCLUDE:
+    description: 'Comma-separated list of file patterns to exclude'
+    required: false
+    default: ''
+  DEBUG:
+    description: 'Enable debug logging'
+    required: false
+    default: 'true'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r ${{ github.action_path }}/requirements.txt
+
+    - name: Run code review
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
+        OPENAI_MODEL: ${{ inputs.OPENAI_MODEL }}
+        INPUT_EXCLUDE: ${{ inputs.EXCLUDE }}
+        DEBUG: ${{ inputs.DEBUG }}
+      run: python ${{ github.action_path }}/main.py
