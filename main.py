@@ -1,7 +1,5 @@
-import os
+
 import sys
-import fnmatch
-from typing import List
 from services.create_comment import create_comment
 from services.diff_parser import parse_diff
 from services.get_diff import get_diff

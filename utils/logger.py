@@ -11,7 +11,7 @@ def get_logger() -> logging.Logger:
     logger = logging.getLogger(caller)
 
     if not logger.handlers:
-        log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+        log_level = os.getenv("LOG_LEVEL", "DEBUG").upper()
         logger.setLevel(getattr(logging, log_level, logging.DEBUG))
 
         handler = logging.StreamHandler(sys.stdout)

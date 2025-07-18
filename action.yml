@@ -1,46 +1,27 @@
-name: "My Code Reviewer"
-description: "This GitHub Action automatically reviews PRs using OpenAI gpt models.."
-author: 'Rakeshreddysr2401'
-
+name: "GitHub PR Reviewer"
+description: "Reviews pull requests using OpenAI"
 inputs:
-  GITHUB_TOKEN:
-    description: 'GitHub token to interact with the repository'
+  openai_api_key:
+    description: "Your OpenAI API Key"
     required: true
-  OPENAI_API_KEY:
-    description: 'OpenAI API key'
+  github_token:
+    description: "GitHub token to access repo and comment"
     required: true
-  OPENAI_MODEL:
-    description: 'The OpenAI model to use for code review'
-    required: false
-    default: 'gpt-4o-mini'
-  EXCLUDE:
-    description: 'Comma-separated list of file patterns to exclude'
-    required: false
-    default: ''
-  DEBUG:
-    description: 'Enable debug logging'
-    required: false
-    default: 'true'
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - uses: actions/checkout@v4
-
-    - uses: actions/setup-python@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.13'
-    - name: Install dependencies
-      shell: bash
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r ${{ github.action_path }}/requirements.txt
+        python-version: "3.11"
 
-    - name: Run code review
+    - name: Install dependencies
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+
+    - name: Run PR reviewer script
+      run: python ${{ github.action_path }}/main.py
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-        OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
-        OPENAI_MODEL: ${{ inputs.OPENAI_MODEL }}
-        INPUT_EXCLUDE: ${{ inputs.EXCLUDE }}
-        DEBUG: ${{ inputs.DEBUG }}
-      run: python ${{ github.action_path }}/main.py
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
