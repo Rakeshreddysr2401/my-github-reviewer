@@ -10,6 +10,7 @@ from utils.logger import get_logger
 log = get_logger()
 
 def main():
+    print("=============STARTED CODE REVIEW PROCESS================")
     """Main function to execute the code review process."""
     try:
         pr_details: PRDetails = get_pr_details()
@@ -41,6 +42,7 @@ def main():
                 sys.exit(1)
         else:
             log.info("No issues found, no comments to post")
+        print("=============CODE REVIEW PROCESS COMPLETED================")
 
     except Exception as error:
         log.exception(f"Error in main: {error}")
