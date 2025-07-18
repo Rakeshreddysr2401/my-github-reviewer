@@ -3,13 +3,13 @@
 import re
 from typing import List
 
-import States.state
+from States.state import File,Change,Chunk
 from utils.logger import get_logger
 from utils.path_utils import normalize_file_path
 
 log = get_logger()
 
-def parse_diff(diff_text: str) -> List[States.File]:
+def parse_diff(diff_text: str) -> List[File]:
     files = []
     current_file = None
     current_chunk = None
@@ -38,7 +38,7 @@ def parse_diff(diff_text: str) -> List[States.File]:
                 files.append(current_file)
                 log.debug(f"Added file to list: {current_file.to_file} with {len(current_file.chunks)} chunks")
 
-            current_file = States.File()
+            current_file = File()
             parts = line.split()
             if len(parts) >= 3:
                 if parts[2].startswith("a/"):
@@ -55,7 +55,7 @@ def parse_diff(diff_text: str) -> List[States.File]:
         elif line.startswith("@@") and not in_binary_file and current_file:
             if current_chunk:
                 current_file.chunks.append(current_chunk)
-            current_chunk = States.Chunk()
+            current_chunk = Chunk()
             current_chunk.content = line
 
             match = re.match(r'@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@', line)
@@ -72,11 +72,11 @@ def parse_diff(diff_text: str) -> List[States.File]:
             current_chunk.content += "\n" + line
 
             if line.startswith(" ") or line.startswith("+"):
-                change = States.Change(content=line, line_number=target_line_number)
+                change = Change(content=line, line_number=target_line_number)
                 current_chunk.changes.append(change)
                 target_line_number += 1
             elif line.startswith("-"):
-                change = States.Change(content=line)
+                change = Change(content=line)
                 current_chunk.changes.append(change)
 
         line_index += 1
