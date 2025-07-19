@@ -1,5 +1,6 @@
 
 import sys
+from services.code_reviewer import analyze_code
 from services.create_comment import create_comment
 from services.diff_parser import parse_diff
 from services.get_diff import get_diff
@@ -28,7 +29,7 @@ def main():
             log.warning("No files to analyze after filtering")
             return
 
-        comments = create_comment(filtered_diff, pr_details)
+        comments = analyze_code(filtered_diff, pr_details)
         log.debug(f"Generated {len(comments)} comments")
 
         if comments:
@@ -47,3 +48,7 @@ def main():
     except Exception as error:
         log.exception(f"Error in main: {error}")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

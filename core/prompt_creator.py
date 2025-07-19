@@ -1,6 +1,7 @@
 from typing import Optional
 
 from States.state import File, Chunk
+from services.pr_details import PRDetails
 from utils.logger import get_logger
 from utils.path_utils import normalize_file_path
 
