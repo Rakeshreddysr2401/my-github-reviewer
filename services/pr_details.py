@@ -26,10 +26,10 @@ def get_pr_details() -> PRDetails:
 
         log.debug(f"Event data loaded. {event_data}")
 
-
-        if "issue" in event_data and "pull_request" in event_data["issue"]:
-            pull_number = event_data["issue"]["number"]
-            repo_full_name = event_data["repository"]["full_name"]
+        # For pull_request events
+        if "pull_request" in event_data:
+            pull_number = event_data["number"]
+            repo_full_name = event_data["pull_request"]["base"]["repo"]["full_name"]
         else:
             raise ValueError("Unsupported event type")
 
