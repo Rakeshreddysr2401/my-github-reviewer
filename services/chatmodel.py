@@ -6,10 +6,14 @@ from utils.logger import get_logger
 
 log = get_logger()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+if not os.getenv("OPENAI_API_KEY"):
+    log.error("OPENAI_API_KEY environment variable is not set. Please set it to use OpenAI services.")
 
 def get_ai_response(prompt: str) -> List[Dict[str, str]]:
     """Sends the prompt to OpenAI API and retrieves the response."""
-    model = os.getenv("OPENAI_MODEL", "gpt-4o")
+    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    if not model:
+        log.error("OPENAI_MODEL environment variable is not set using default 'gpt-4o-mini'")
     log.info(f"Using OpenAI model: {model}")
 
     try:
