@@ -15,6 +15,13 @@ inputs:
     description: "Comma-separated list of files to exclude from review"
     required: false
     default: ""
+  PULL_NUMBER:
+    description: "Pull request number to review"
+    required: true
+  REPOSITORY:
+    description: "Repository in the format owner/repo"
+    required: true
+    default: "${{ github.repository }}"
 runs:
   using: "composite"
   steps:
@@ -33,4 +40,5 @@ runs:
       env:
         OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-        GITHUB_EVENT_PATH: ${{ inputs.GITHUB_EVENT_PATH }}
+        PULL_NUMBER: ${{ inputs.PULL_NUMBER }}
+        REPOSITORY: ${{ inputs.REPOSITORY }}

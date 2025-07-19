@@ -16,30 +16,13 @@ class PRDetails:
 
 
 def get_pr_details() -> PRDetails:
-    event_path = os.environ.get("GITHUB_EVENT_PATH", ".github/test-data/pull_request_event.json")
 
-    log.debug(f"Using event path: {event_path}")
+    pull_number = os.environ.get("PULL_NUMBER")
+    repo_full_name = os.environ.get("REPOSITORY")
 
-    try:
-        with open(event_path, "r") as f:
-            event_data = json.load(f)
+    owner, repo = repo_full_name.split("/")
+    repo_obj = gh.get_repo(repo_full_name)
+    pr = repo_obj.get_pull(pull_number)
+    return PRDetails(owner, repo, pull_number, pr.title, pr.body)
 
-        log.debug(f"Event data loaded. {event_data}")
 
-        # For pull_request events
-        if "pull_request" in event_data:
-            pull_number = event_data["number"]
-            repo_full_name = event_data["pull_request"]["base"]["repo"]["full_name"]
-        else:
-            raise ValueError("Unsupported event type")
-
-        owner, repo = repo_full_name.split("/")
-
-        repo_obj = gh.get_repo(repo_full_name)
-        pr = repo_obj.get_pull(pull_number)
-
-        return PRDetails(owner, repo, pull_number, pr.title, pr.body)
-
-    except Exception as e:
-        log.debug(f"Error in get_pr_details: {e}")
-        raise
