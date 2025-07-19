@@ -17,7 +17,7 @@ class PRDetails:
 
 def get_pr_details() -> PRDetails:
 
-    pull_number = os.environ.get("PULL_NUMBER")
+    pull_number = int(os.environ.get("PULL_NUMBER"))
     repo_full_name = os.environ.get("REPOSITORY")
 
     owner, repo = repo_full_name.split("/")
