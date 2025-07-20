@@ -1,12 +1,11 @@
 
 import sys
-from services.code_reviewer import review_code_by_llm
-from services.create_comment import create_comment
-from services.diff_parser import parse_diff
-from services.get_diff import get_diff
-from services.git_review_comment_sender import create_review_comment
-from services.pr_details import PRDetails, get_pr_details
-from utils.file_filters import get_exclude_patterns_from_env, filter_files_by_exclude_patterns
+from services.model_services.code_reviewer import review_code_by_llm
+from utils.github_utils.diff_parser import parse_diff
+from services.git_services.get_diff import get_diff
+from services.git_services.git_review_comment_sender import create_review_comment
+from services.git_services.get_pr_details import PRDetails, get_pr_details
+from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
 log = get_logger()
 

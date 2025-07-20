@@ -1,7 +1,6 @@
-# services/pr_details.py
+# services/get_pr_details.py
 import os
-import json
-from services.github_client import gh
+from services.git_services.github_client import gh
 from utils.logger import get_logger
 
 log = get_logger()

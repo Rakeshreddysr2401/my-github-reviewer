@@ -1,12 +1,10 @@
 # src/github/review_commenter.py
 from typing import List, Dict, Any
-from services.pr_details import PRDetails
+from services.git_services.get_pr_details import PRDetails
 from utils.logger import get_logger
 
 log = get_logger()
 
-
-import requests
 
 # def post_comment_reply(comment_id, body_text):
 #     url = f"https://api.github.com/repos/{REPO}/issues/comments/{comment_id}/replies"

@@ -1,8 +1,7 @@
 # services/get_diff.py
 import os
 import requests
-from services.github_client import gh
-from services.pr_details import PRDetails
+from services.git_services.get_pr_details import PRDetails
 from utils.logger import get_logger
 
 log = get_logger()

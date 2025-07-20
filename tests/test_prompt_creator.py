@@ -5,7 +5,7 @@ from core.prompt_creator import create_prompt
 
 from unittest.mock import MagicMock
 
-from services.pr_details import PRDetails
+from services.git_services.get_pr_details import PRDetails
 
 
 @pytest.fixture
