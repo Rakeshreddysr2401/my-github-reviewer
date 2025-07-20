@@ -15,7 +15,7 @@ def parse_diff(diff_text: str) -> List[File]:
     current_chunk = None
     target_line_number = 0
 
-    log.debug("Starting to parse diff...")
+    print("======================Starting to parse diff====================")
     lines = diff_text.splitlines()
     line_index = 0
     in_binary_file = False
@@ -38,6 +38,7 @@ def parse_diff(diff_text: str) -> List[File]:
                 files.append(current_file)
                 log.debug(f"Added file to list: {current_file.to_file} with {len(current_file.chunks)} chunks")
 
+            #Starting New File
             current_file = File()
             parts = line.split()
             if len(parts) >= 3:
@@ -45,13 +46,14 @@ def parse_diff(diff_text: str) -> List[File]:
                     current_file.from_file = parts[2]
                 if len(parts) > 3 and parts[3].startswith("b/"):
                     current_file.to_file = parts[3]
-
+        #Adding From and To File
         elif line.startswith("--- ") and current_file:
             current_file.from_file = line[4:].strip()
 
         elif line.startswith("+++ ") and current_file:
             current_file.to_file = line[4:].strip()
-
+        #Adding Some File Related Information
+        #Adding New Chunk
         elif line.startswith("@@") and not in_binary_file and current_file:
             if current_chunk:
                 current_file.chunks.append(current_chunk)
@@ -67,7 +69,7 @@ def parse_diff(diff_text: str) -> List[File]:
                 current_chunk.source_start = 1
                 current_chunk.target_start = 1
                 target_line_number = 1
-
+        #Adding Changes to Chunk
         elif current_chunk and current_file and not in_binary_file:
             current_chunk.content += "\n" + line
 

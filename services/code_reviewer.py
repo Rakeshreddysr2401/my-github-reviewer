@@ -11,10 +11,10 @@ from utils.path_utils import normalize_file_path
 
 log = get_logger()
 
-def analyze_code(parsed_diff: List[File], pr_details: PRDetails) -> List[Dict[str, Any]]:
-    """Analyzes the code changes using Claude and generates review comments."""
-    log.info("Starting analyze_code")
-    log.info(f"Number of files to analyze: {len(parsed_diff)}")
+def review_code_by_llm(parsed_diff: List[File], pr_details: PRDetails) -> List[Dict[str, Any]]:
+    """Review the code changes using OpenAI and generates review comments."""
+    print("======================Starting reviewing_code By LLM======================")
+    log.debug(f"Number of files to review: {len(parsed_diff)}")
 
     comments = []
 
@@ -24,19 +24,19 @@ def analyze_code(parsed_diff: List[File], pr_details: PRDetails) -> List[Dict[st
 
     # Keep track of the number of API calls to avoid rate limiting
     api_call_count = 0
-    max_api_calls = int(os.environ.get('MAX_API_CALLS', '20'))
+    max_api_calls = int(os.environ.get('MAX_API_CALLS', '15'))
     log.debug(f"Max API calls allowed: {max_api_calls}")
 
     for file_index, file in enumerate(parsed_diff):
         if file_index >= max_files:
-            log.info(f"Reached max files limit ({max_files}). Stopping analysis.")
+            log.warning(f"Reached max files limit ({max_files}). Stopping analysis.")
             break
 
         normalized_path = normalize_file_path(file.to_file)
         log.info(f"Processing file {file_index + 1}/{min(len(parsed_diff), max_files)}: {normalized_path}")
 
         if not normalized_path or normalized_path == "/dev/null":
-            log.debug(f"Skipping file with invalid path: {normalized_path}")
+            log.warning(f"Skipping file with invalid path: {normalized_path}")
             continue
 
         if not file.chunks:
@@ -47,7 +47,7 @@ def analyze_code(parsed_diff: List[File], pr_details: PRDetails) -> List[Dict[st
 
         for chunk_index, chunk in enumerate(file.chunks):
             if not chunk.changes:
-                log.debug(f"Chunk {chunk_index + 1} in file {normalized_path} has no changes. Skipping.")
+                log.warning(f"Chunk {chunk_index + 1} in file {normalized_path} has no changes. Skipping.")
                 continue
 
             if api_call_count >= max_api_calls:
@@ -72,6 +72,7 @@ def analyze_code(parsed_diff: List[File], pr_details: PRDetails) -> List[Dict[st
 
     log.info(f"Final comments count: {len(comments)}")
     if comments:
+        #todo need to look into this
         log.debug("Sample comments:")
         for i, comment in enumerate(comments[:3]):
             log.debug(f"Comment {i + 1}: {comment['path']}:{comment.get('line', 'N/A')} - {comment['body'][:50]}...")

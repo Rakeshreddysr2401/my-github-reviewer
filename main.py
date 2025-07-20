@@ -1,6 +1,6 @@
 
 import sys
-from services.code_reviewer import analyze_code
+from services.code_reviewer import review_code_by_llm
 from services.create_comment import create_comment
 from services.diff_parser import parse_diff
 from services.get_diff import get_diff
@@ -14,35 +14,30 @@ def main():
     print("=============STARTED CODE REVIEW PROCESS================")
     """Main function to execute the code review process."""
     try:
+        #Used to get PR details
         pr_details: PRDetails = get_pr_details()
-
-        diff = get_diff(pr_details.owner, pr_details.repo, pr_details.pull_number)
+        #Used to get difference in PR
+        diff = get_diff(pr_details)
         if not diff:
             log.warning("No diff found, nothing to review")
             return
-
+        #Used to parse the diff into a structured format
         parsed_diff = parse_diff(diff)
-        exclude_patterns = get_exclude_patterns_from_env()
-        filtered_diff = filter_files_by_exclude_patterns(parsed_diff, exclude_patterns)
-
+        #List of Files to Include
+        filtered_diff = filter_files_by_exclude_patterns(parsed_diff)
         if not filtered_diff:
             log.warning("No files to analyze after filtering")
             return
-
-        comments = analyze_code(filtered_diff, pr_details)
-        log.debug(f"Generated {len(comments)} comments")
-
+        comments = review_code_by_llm(filtered_diff, pr_details)
         if comments:
             try:
-                review_id = create_review_comment(
-                    pr_details.owner, pr_details.repo, pr_details.pull_number, comments
-                )
+                review_id = create_review_comment(pr_details, comments)
                 log.info(f"Successfully posted review with ID: {review_id}")
             except Exception as e:
                 log.error(f"Failed to post comments: {e}")
                 sys.exit(1)
         else:
-            log.info("No issues found, no comments to post")
+            log.warning("No issues found, no comments to post")
         print("=============CODE REVIEW PROCESS COMPLETED================")
 
     except Exception as error:

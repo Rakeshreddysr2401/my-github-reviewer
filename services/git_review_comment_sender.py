@@ -1,24 +1,29 @@
 # src/github/review_commenter.py
 from typing import List, Dict, Any
-
-
-from services.github_client import gh
+from services.pr_details import PRDetails
 from utils.logger import get_logger
 
 log = get_logger()
 
 
-def create_review_comment(
-        owner: str,
-        repo: str,
-        pull_number: int,
-        comments: List[Dict[str, Any]],
-):
-    """Creates a pull request review with comments on specific lines."""
-    print(f"Creating PR review with {len(comments)} comments")
+import requests
 
+# def post_comment_reply(comment_id, body_text):
+#     url = f"https://api.github.com/repos/{REPO}/issues/comments/{comment_id}/replies"
+#     headers = {
+#         "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+#         "Accept": "application/vnd.github+json"
+#     }
+#     response = requests.post(url, json={"body": body_text}, headers=headers)
+#     print(response.status_code, response.json())
+
+
+
+def create_review_comment(pr_details: PRDetails,comments: List[Dict[str, Any]]):
+    """Creates a pull request review with comments on specific lines."""
+    print(f"==============Creating PR review with {len(comments)} comments===================")
     if not comments:
-        print("WARNING: No comments to post, skipping")
+        log.warning("WARNING: No comments to post, skipping")
         return
 
     # Group comments by file for better reporting
@@ -32,16 +37,9 @@ def create_review_comment(
     # Print comment distribution
     print("Comments distribution by file:")
     for file_path, file_comments in comments_by_file.items():
-        print(f"  - {file_path}: {len(file_comments)} comments")
+        log.debug(f"  - {file_path}: {len(file_comments)} comments")
 
     try:
-        # Initialize GitHub client and get repository
-        log.debug(f"Getting repo object for {owner}/{repo}...")
-        repo_obj = gh.get_repo(f"{owner}/{repo}")
-        log.debug(f"Getting PR #{pull_number}...")
-        pr = repo_obj.get_pull(pull_number)
-        log.debug(f"Successfully retrieved PR: {pr.title}")
-
         # Format comments for the review
         formatted_comments = []
 
@@ -64,21 +62,22 @@ def create_review_comment(
             formatted_comments.append(formatted_comment)
 
         if not formatted_comments:
-            print("WARNING: No valid comments to post")
+            log.warning("WARNING: No valid comments to post")
             return
         log.debug(f"The review comments are : {formatted_comments}")
         # Create the pull request review with all comments
+        pr=pr_details.pr_obj
         review = pr.create_review(
             body="Code review by OpenAI",
             event="COMMENT",
             comments=formatted_comments
         )
 
-        print(f"Successfully created PR review with ID: {review.id}")
+        log.info(f"Successfully created PR review with ID: {review.id}")
         return review.id
 
     except Exception as e:
-        print(f"ERROR: Failed to create PR review: {str(e)}")
+        log.error(f"ERROR: Failed to create PR review: {str(e)}")
 
         # Try fallback method - post comments individually
         try:
