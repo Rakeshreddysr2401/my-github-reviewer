@@ -13,10 +13,12 @@ load_dotenv()
 from utils.logger import get_logger
 log = get_logger()
 
-def upload_personal_data():
-    log.info("*******************Starting uploading to FAISS...  From data/knowledge_base *******************")
+def upload_vector_data():
+    log.info("🚀 Starting upload to FAISS from `data/knowledge_base`")
+
     base_dir = Path(__file__).resolve().parent.parent
     data_path = base_dir / "data" / "knowledge_base"
+    persist_path = base_dir / "vectorstores" / "faiss_index"
 
     if not data_path.exists():
         log.error(f"❌ To Upload Data to Vector DB Folder not found: {data_path}")
@@ -29,42 +31,31 @@ def upload_personal_data():
         loader_cls=TextLoader
     )
     raw_docs = loader.load()
+    log.info(f"📄 Loaded {len(raw_docs)} raw text files")
 
-    # Add metadata to each doc
+    # Add topic metadata
     for doc in raw_docs:
         filename = os.path.basename(doc.metadata['source'])
         topic = filename.replace(".txt", "")
-        doc.metadata.update({
-            "topic": topic
-            # "source": topic,
-            # "topic": "personal_info",
-            # "author": "abc"
-        })
+        doc.metadata.update({"topic": topic})
+    log.info("🏷️  Added 'topic' metadata to all documents")
 
-    log.info(f"📄 Loaded {len(raw_docs)} raw documents")
-
-    # Split text into chunks
+    # Split into chunks
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_documents(raw_docs)
+    log.info(f"✂️  Split into {len(chunks)} document chunks")
 
-    log.info(f"✂️  Created {len(chunks)} chunks")
-
-    # Load embeddings
-    #embeddings = OpenAIEmbeddings()  #or use HuggingFaceEmbeddings
+    # Load Embeddings
+    # embeddings = OpenAIEmbeddings()  #or use HuggingFaceEmbeddings
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-    # Upload to FAISS (stores in memory unless you persist to disk)
-    vectorstore = FAISS.from_documents(
-        documents=chunks,
-        embedding=embeddings
-    )
+    # Create FAISS vectorstore
+    vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
 
-    # Save to disk (optional but recommended)
-    persist_path = base_dir / "vectorstores" / "faiss_index"
+    # Save locally
     persist_path.parent.mkdir(parents=True, exist_ok=True)
     vectorstore.save_local(folder_path=str(persist_path))
-
-    log.info(f"✅ Personal data uploaded to FAISS and saved to {persist_path}")
+    log.info(f"✅ Vectorstore saved at {persist_path}")
 
 if __name__ == "__main__":
-    upload_personal_data()
+    upload_vector_data()

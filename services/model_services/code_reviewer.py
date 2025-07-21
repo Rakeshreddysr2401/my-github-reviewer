@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from States.state import File
-from core.prompt_creator import create_prompt
+from prompts.prompt_creator import create_prompt
 from services.model_services.chatmodel import get_ai_response
 from utils.github_utils.create_comment import create_comment
 from services.git_services.get_pr_details import PRDetails
