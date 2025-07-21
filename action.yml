@@ -22,6 +22,19 @@ inputs:
     description: "Repository in the format owner/repo"
     required: true
     default: "${{ github.repository }}"
+  PROVIDER:
+    description: "The provider to use (e.g., openai,anthropic,gemini)"
+    required: false
+    default: "openai"
+  MODEL:
+    description: "The model to use (e.g., gpt-4o-mini,gpt-4o,claude-3-5-sonnet,claude-3-opus)"
+    required: false
+    default: "gpt-4o"
+  TEMPERATURE:
+    description: "Temperature for the model (0.0 for deterministic, 1.0 for creative)"
+    required: false
+    default: "0.5"
+
 runs:
   using: "composite"
   steps:
@@ -42,3 +55,6 @@ runs:
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
         PULL_NUMBER: ${{ inputs.PULL_NUMBER }}
         REPOSITORY: ${{ inputs.REPOSITORY }}
+        MODEL: ${{ inputs.MODEL }}
+        PROVIDER: ${{ inputs.PROVIDER }}
+        TEMPERATURE: ${{ inputs.TEMPERATURE }}
