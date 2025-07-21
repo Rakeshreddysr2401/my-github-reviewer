@@ -1,0 +1,4 @@
+// java_instructions.txt
+- Avoid using raw types in collections.
+- Prefer Optional over null.
+- Always close resources in a try-with-resources block.

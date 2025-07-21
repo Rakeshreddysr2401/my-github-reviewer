@@ -5,7 +5,8 @@ from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.chat_models import ChatOllama
 from utils.logger import get_logger
-
+from dotenv import load_dotenv
+load_dotenv()
 log = get_logger()
 
 # Registry of all supported providers and models

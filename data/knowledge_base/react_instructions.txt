@@ -1,0 +1,4 @@
+// react_instructions.txt
+- Use functional components with hooks.
+- Avoid inline functions in JSX for performance.
+- Ensure keys are unique in lists.

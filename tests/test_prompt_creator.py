@@ -1,7 +1,7 @@
 import pytest
 
 from States.state import File, Change, Chunk
-from core.prompt_creator import create_prompt
+from prompts.prompt_creator import create_prompt
 
 from unittest.mock import MagicMock
 
@@ -78,7 +78,7 @@ def test_create_prompt_formatting_error(monkeypatch, dummy_data):
     file, chunk, pr_details = dummy_data
 
     # Simulate an exception in normalize_file_path
-    monkeypatch.setattr("core.prompt_creator.normalize_file_path", lambda _: (_ for _ in ()).throw(ValueError("Path error")))
+    monkeypatch.setattr("prompts.prompt_creator.normalize_file_path", lambda _: (_ for _ in ()).throw(ValueError("Path error")))
 
     with pytest.raises(RuntimeError) as exc_info:
         create_prompt(file, chunk, pr_details)
