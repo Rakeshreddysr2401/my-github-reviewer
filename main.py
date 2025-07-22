@@ -7,7 +7,8 @@ from services.git_services.git_review_comment_sender import create_review_commen
 from services.git_services.get_pr_details import PRDetails, get_pr_details
 from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
-from utils.vectorstore_utils import ensure_vectorstore_exists, ensure_vectorstore_exists_and_get
+import os
+from utils.vectorstore_utils import ensure_vectorstore_exists_and_get
 
 log = get_logger()
 
@@ -16,7 +17,10 @@ def main():
     """Main function to execute the code review process."""
     try:
         # ✅ Ensure vectorstore and get the handle
-        guideline_store = ensure_vectorstore_exists_and_get()
+        guideline_store = None
+        if os.environ.get('USE_VECTORSTORE', 'false').lower() == 'true':
+            log.info("Using vectorstore for coding guidelines")
+            guideline_store=ensure_vectorstore_exists_and_get()
         #Used to get PR details
         pr_details: PRDetails = get_pr_details()
         #Used to get difference in PR

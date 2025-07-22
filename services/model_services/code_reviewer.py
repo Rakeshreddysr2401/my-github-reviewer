@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from States.state import File
 from prompts.prompt_creator import create_prompt
@@ -11,7 +11,7 @@ from utils.path_utils import normalize_file_path
 
 log = get_logger()
 
-def review_code_by_llm(parsed_diff: List[File], pr_details: PRDetails,guidelines_store=None) -> List[Dict[str, Any]]:
+def review_code_by_llm(parsed_diff: List[File], pr_details: PRDetails,guidelines_store:Optional[object]=None) -> List[Dict[str, Any]]:
     """Review the code changes using OpenAI and generates review comments."""
     print("======================Starting reviewing_code By LLM======================")
     log.debug(f"Number of files to review: {len(parsed_diff)}")
@@ -55,7 +55,7 @@ def review_code_by_llm(parsed_diff: List[File], pr_details: PRDetails,guidelines
                 break
 
             log.debug(f"Processing chunk {chunk_index + 1}/{len(file.chunks)} with {len(chunk.changes)} changes")
-            prompt = create_prompt(file, chunk, pr_details,guildelines_store)
+            prompt = create_prompt(file, chunk, pr_details,guidelines_store)
             log.debug(f"Created prompt of length {len(prompt)}")
 
             ai_responses = get_ai_response(prompt)
