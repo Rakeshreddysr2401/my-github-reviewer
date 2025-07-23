@@ -65,3 +65,9 @@ by adding in below EXCLUDE key - value
 PROVIDER="openai"
 MODEL_NAME="gpt-4o"
 TEMPERATURE="0.7"
+
+
+---
+# Finally Looks Like below :
+
+<img width="1440" height="900" alt="Screenshot 2025-07-23 at 8 59 12 PM" src="https://github.com/user-attachments/assets/f76887e3-463e-43bd-9146-2f602c2ead02" />
