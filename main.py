@@ -2,7 +2,6 @@
 import sys
 from uuid import uuid4
 from States.state import ReviewState
-from services.model_services.code_reviewer import review_code_by_llm
 from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
 from services.git_services.git_review_comment_sender import create_review_comment

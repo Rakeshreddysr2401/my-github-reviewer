@@ -31,8 +31,12 @@ PROVIDER_REGISTRY = {
 }
 
 
-def get_llm(provider: str = "openai", model: str = "gpt-4o-mini", temperature: float = 0.7):
+def get_llm():
     """Returns an LLM instance based on provider, model, and temperature."""
+    provider = os.getenv("PROVIDER", "openai")
+    model = os.getenv("MODEL_NAME", "gpt-4o-mini")
+    temperature = float(os.getenv("TEMPERATURE", "0.7"))
+
     provider = provider.lower()
     model = model.lower()
 

@@ -1,5 +1,5 @@
 from States.state import ReviewState
-from services.model_services.chatmodel import get_ai_response
+from agents.code_reviewer_agent import code_reviewer_agent
 from utils.path_utils import normalize_file_path
 
 
@@ -48,7 +48,7 @@ def code_reviewer(state: ReviewState) -> ReviewState:
     final_prompt = "\n".join(prompt_parts)
 
     state.current_prompt = final_prompt;
-    state.llm_response = get_ai_response(state.current_prompt)
+    state.llm_response = code_reviewer_agent(state.current_prompt)
     return state
 
 

@@ -76,10 +76,12 @@ def parse_diff(diff_text: str) -> List[File]:
             if line.startswith(" ") or line.startswith("+"):
                 change = Change(content=line, line_number=target_line_number)
                 current_chunk.changes.append(change)
+                current_chunk.formatted_chunk.append(f"{target_line_number}{line}")
                 target_line_number += 1
             elif line.startswith("-"):
                 change = Change(content=line)
                 current_chunk.changes.append(change)
+                current_chunk.formatted_chunk.append(f"{line}")
 
         line_index += 1
 

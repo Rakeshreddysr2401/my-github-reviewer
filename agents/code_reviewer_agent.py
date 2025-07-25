@@ -1,4 +1,3 @@
-import os
 import json
 from typing import List, Dict
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -7,33 +6,15 @@ from utils.logger import get_logger
 
 log = get_logger()
 
-def get_ai_response(prompt: str) -> List[Dict[str, str]]:
-    """Gets response from selected LLM provider and parses it into structured review data."""
-    provider = os.getenv("PROVIDER", "openai")
-    model = os.getenv("MODEL_NAME", "gpt-4o-mini")
-    temperature = float(os.getenv("TEMPERATURE", "0.7"))
-
-    try:
-        llm = get_llm(provider, model, temperature)
-    except ValueError as e:
-        log.error(str(e))
-        return []
-
-    log.info(f"Using provider: {provider}, model: {model}, temperature: {temperature}")
-
+def code_reviewer_agent(prompt: str) -> List[Dict[str, str]]:
+    llm=get_llm()
     messages = [
         SystemMessage(content="You are an expert code reviewer. Provide feedback in the requested JSON format."),
         HumanMessage(content=prompt)
     ]
-
-    try:
-        response = llm.invoke(messages)
-        response_text = response.content.strip()
-        return _parse_review_json(response_text)
-    except Exception as e:
-        log.exception("LLM invocation failed")
-        raise  # Critical for logical parity with old version
-
+    response = llm.invoke(messages)
+    response_text = response.content.strip()
+    return _parse_review_json(response_text)
 
 def _parse_review_json(response_text: str) -> List[Dict[str, str]]:
     """Parses the LLM's raw response string into a validated list of review comments."""

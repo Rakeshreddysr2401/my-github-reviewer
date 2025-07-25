@@ -8,6 +8,8 @@ class Change(BaseModel):
     content: str = ""
     line_number: Optional[int] = None
     diff_position: Optional[int] = None
+    suggested_code: Optional[str] = None
+    suggested_comment: Optional[str] = None
 
 
 class Chunk(BaseModel):
@@ -19,6 +21,9 @@ class Chunk(BaseModel):
     source_length: int = 0
     target_start: int = 0
     target_length: int = 0
+    formatted_chunk: Optional[List[str]] = Field(default_factory=list)
+    generated_code_snippet: Optional[str] = None
+    generated_review_comment: Optional[str] = None
 
 
 class File(BaseModel):
