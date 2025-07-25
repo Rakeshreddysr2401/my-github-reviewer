@@ -1,25 +1,41 @@
-# services/diff_parser/models.py
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional, Any
+from services.git_services.get_pr_details import PRDetails
 
-class Chunk:
-    """Represents a chunk/hunk in a diff."""
-    def __init__(self):
-        self.content = ""
-        self.changes = []
-        self.source_start = 0
-        self.source_length = 0
-        self.target_start = 0
-        self.target_length = 0
 
-class Change:
+class Change(BaseModel):
     """Represents a single change line in a diff."""
-    def __init__(self, content="", line_number=None):
-        self.content = content
-        self.line_number = line_number
-        self.diff_position = None
+    content: str = ""
+    line_number: Optional[int] = None
+    diff_position: Optional[int] = None
 
-class File:
+
+class Chunk(BaseModel):
+    """Represents a chunk/hunk in a diff."""
+    content: str = ""
+    changes: List[Change] = Field(default_factory=list)
+    guidelines: str = ""
+    source_start: int = 0
+    source_length: int = 0
+    target_start: int = 0
+    target_length: int = 0
+
+
+class File(BaseModel):
     """Represents a file in a diff."""
-    def __init__(self):
-        self.from_file = None
-        self.to_file = None
-        self.chunks = []
+    from_file: Optional[str] = None
+    to_file: Optional[str] = None
+    chunks: List[Chunk] = Field(default_factory=list)
+
+
+class ReviewState(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    pr_details: PRDetails
+    files: List[File]
+    current_file_index: int = 0
+    current_chunk_index: int = 0
+    current_prompt: Optional[str] = None
+    llm_response: Optional[List[dict]] = None
+    comments: List[dict] = Field(default_factory=list)
+    guidelines_store: Optional[Any] = None
+    done: bool = False

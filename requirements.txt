@@ -4,6 +4,8 @@ pytest>=7.0.0
 PyGithub>=1.58
 langchain>=0.1.20
 langchain-community>=0.0.20
+langgraph>=0.0.40
+
 
 
 # For Anthropic (Claude)

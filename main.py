@@ -1,5 +1,7 @@
 
 import sys
+from uuid import uuid4
+from States.state import ReviewState
 from services.model_services.code_reviewer import review_code_by_llm
 from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
@@ -9,7 +11,7 @@ from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
 import os
 from utils.vectorstore_utils import ensure_vectorstore_exists_and_get
-
+from graph import graph
 log = get_logger()
 
 def main():
@@ -35,7 +37,21 @@ def main():
         if not filtered_diff:
             log.warning("No files to analyze after filtering")
             return
-        comments = review_code_by_llm(filtered_diff, pr_details,guideline_store)
+
+        initial_state = ReviewState(
+            pr_details=pr_details,
+            files=parsed_diff,
+            comments=[],
+            guidelines_store=guideline_store
+        )
+        # thread_id = str(uuid4())
+        # config = {"configurable": {"thread_id": thread_id}}
+        config = {"checkpointer": None}
+
+
+        final_state = graph.invoke(initial_state,config)
+        print(final_state.comments)
+        comments = final_state.comments
         if comments:
             try:
                 review_id = create_review_comment(pr_details, comments)
