@@ -50,8 +50,9 @@ def main():
 
 
         final_state = graph.invoke(initial_state,config)
-        print(final_state.comments)
-        comments = final_state.comments
+        final_state_obj = ReviewState(**final_state)
+        print(final_state_obj.comments)
+        comments = final_state_obj.comments
         if comments:
             try:
                 review_id = create_review_comment(pr_details, comments)
