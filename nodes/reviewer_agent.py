@@ -1,9 +1,8 @@
 # nodes/reviewer_agent.py
-import os
 from States.state import ReviewState
-from chains import reviewer_agent_chain
-from chains.reviewer_agent_chain import ReviewResponse
+from chains.reviewer_agent_chain import ReviewResponse, reviewer_agent_chain
 from utils.path_utils import normalize_file_path
+
 
 def reviewer_agent(state: ReviewState):
     pr_details = state.pr_details
@@ -17,10 +16,8 @@ def reviewer_agent(state: ReviewState):
     critique = state.review_feedback.get("critique") if state.review_feedback else "None provided."
     suggestion_text = "\n".join(state.review_feedback.get("suggestions", [])) if state.review_feedback else "None."
 
-
-
     try:
-        review : ReviewResponse = reviewer_agent_chain.invoke({
+        review: ReviewResponse = reviewer_agent_chain.invoke({
             "pr_title": pr_details.title,
             "pr_description": pr_details.description or "",
             "file_path": normalized_path,
@@ -37,10 +34,6 @@ def reviewer_agent(state: ReviewState):
             "error": str(e)
         }
     return {
-        "llm_response": review.reviews if review.reviews else [],
+
+        "llm_response": review
     }
-
-
-
-
-

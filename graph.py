@@ -26,8 +26,8 @@ def create_reviewer_graph():
 
     def feedback_agent_transition(state:ReviewState):
         """Determine next step after feedback_agent."""
-        retry_count = state.get("retry_count", 0)
-        satisfied = state.get("satisfied", True)
+        retry_count = state.retry_count
+        satisfied = state.satisfied
 
         if satisfied or retry_count > MAX_RETRIES:
             return "format_comments"
