@@ -10,7 +10,7 @@ MAX_RETRIES = os.getenv("MAX_LOOP", 2)
 
 def feedback_agent(state: ReviewState):
     retry_count = state.retry_count
-    messages = []
+    messages = state.messages
 
     pr_details = state.pr_details
     file = state.files[state.current_file_index]
@@ -19,22 +19,19 @@ def feedback_agent(state: ReviewState):
 
     guidelines_available = chunk.guidelines is not None and chunk.guidelines.strip() != ""
     formatted_chunk = "\n".join(chunk.formatted_chunk)
-    last_ai_response = "\n".join([f"lineNumber: {comment.lineNumber}  reviewComment: {comment.reviewComment}" for comment in state.llm_response.reviews])
+    last_ai_response=state.llm_response.model_dump_json(indent=2)
+    # last_ai_response = "\n".join([f"lineNumber: {comment.lineNumber}  reviewComment: {comment.reviewComment}" for comment in state.llm_response.reviews])
 
     print(f"Feedback Agent called : {retry_count + 1} time")
+
+    if retry_count==0:
+        state.messages.final_response = last_ai_response
 
     # If we've exceeded max retries, accept the current response and END
     if retry_count >= MAX_RETRIES:
         print(f"Max retries exceeded. Accepting final response: {last_ai_response}")
         state.satisfied = True
         return state
-
-    # Build chat history string
-    # history_str = "\n".join(
-    #     f"{msg.type.upper()}: {msg.content}"
-    #     for msg in messages
-    #     if hasattr(msg, 'content') and msg.content
-    # )
 
     history_str = "\n".join(
         f"{msg.type.upper()}: {msg.content}"
@@ -45,7 +42,7 @@ def feedback_agent(state: ReviewState):
     try:
         feedback: ReviewFeedback = feedback_agent_chain.invoke({
             "guidelines": guidelines_available,
-            "history": history_str,
+            "history_messages": history_str,
             "ai_response": last_ai_response if last_ai_response else "",
             "user_query": formatted_chunk or ""
         })
@@ -63,6 +60,7 @@ def feedback_agent(state: ReviewState):
         state.satisfied = True
         return state
     state.messages.append(HumanMessage(content=f"Feedback Agent Response: {feedback.model_dump_json(indent=2)}"))
+    state.next_agent = "reviewer_agent"
     return {
         "satisfied": False,
         "final_response": last_ai_response if satisfied else state.final_response,

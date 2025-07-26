@@ -6,6 +6,8 @@ from nodes.retrieve_guidelines import retrieve_guidelines
 from nodes.feedback_agent import feedback_agent, MAX_RETRIES
 from nodes.reviewer_agent import reviewer_agent
 from configs.memory_config import get_memory
+from utils.logger import get_logger
+log= get_logger()
 import os
 
 MAX_RETRIES = int(os.getenv("MAX_LOOP", 2))  # Default to 2 if not set
@@ -24,12 +26,22 @@ def create_reviewer_graph():
             return "code_reviewer"
 
 
+    def guidelines_transition(state:ReviewState):
+        """Determine next step after guidelines."""
+        next = state.next_agent
+        if next:
+            return next
+        log.error("No next agent specified after guidelines retrieval.. terminating.")
+        return END
+
+
     def feedback_agent_transition(state:ReviewState):
         """Determine next step after feedback_agent."""
         retry_count = state.retry_count
         satisfied = state.satisfied
-
-        if satisfied or retry_count > MAX_RETRIES:
+        if retry_count==0:
+            return "retrieve_guidelines"
+        elif satisfied or retry_count > MAX_RETRIES:
             return "format_comments"
         elif not satisfied and retry_count <= MAX_RETRIES:
             return "reviewer_agent"
@@ -57,7 +69,7 @@ def create_reviewer_graph():
         },
     )
 
-    builder.add_edge("retrieve_guidelines", "reviewer_agent")
+    builder.add_edge("retrieve_guidelines", guidelines_transition,{"reviewer_agent": "reviewer_agent", "feedback_agent": "feedback_agent"})
 
     builder.add_edge("reviewer_agent", "feedback_agent")
 
@@ -65,6 +77,7 @@ def create_reviewer_graph():
         "feedback_agent",
         feedback_agent_transition,
         {
+            "retrieve_guidelines": "retrieve_guidelines",
             "reviewer_agent": "reviewer_agent",
             "format_comments": "format_comments",
         }

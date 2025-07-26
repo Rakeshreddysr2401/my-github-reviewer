@@ -8,8 +8,6 @@ load_dotenv()
 
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
-from typing import List
 from llm_config import get_llm
 
 llm = get_llm()
@@ -20,7 +18,7 @@ parser = PydanticOutputParser(pydantic_object=ReviewResponse)
 format_instructions = parser.get_format_instructions()
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert **code reviewer**. Provide feedback in the requested JSON format.
+    ("system", """You are an expert in ** git code reviewer**. Provide feedback in the requested JSON format.
 
 {format_instructions}
 
@@ -35,7 +33,7 @@ Instructions:
 Pull request title: {pr_title}
 Pull request description: {pr_description}
 
-{guidelines_section}
+{history_messages}
 
 The previous response had issues:
 {critique}

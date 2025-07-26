@@ -36,11 +36,8 @@ Respond in the following JSON format:
 Git Diff:
 {user_query}
 
-Provided Guidelines if applicable:
-{guidelines}
-
 Messages History:
-{history_str}
+{history_messages}
 
 AI Reviewer Final Response:
 {ai_response}
