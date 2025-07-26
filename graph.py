@@ -39,7 +39,7 @@ def create_reviewer_graph():
         """Determine next step after feedback_agent."""
         retry_count = state.retry_count
         satisfied = state.satisfied
-        if retry_count==0:
+        if retry_count==1 and state.guidelines_store is not None:
             return "retrieve_guidelines"
         elif satisfied or retry_count > MAX_RETRIES:
             return "format_comments"
@@ -51,7 +51,7 @@ def create_reviewer_graph():
     def reviewer_agent_transition(state: ReviewState):
         """Determine next step after feedback_agent."""
         retry_count = state.retry_count
-        if retry_count == 0:
+        if retry_count == 0 and state.guidelines_store is not None:
             return "retrieve_guidelines"
         return "feedback_agent"
 

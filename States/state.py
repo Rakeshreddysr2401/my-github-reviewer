@@ -63,7 +63,7 @@ class ReviewState(BaseModel):
     satisfied: bool = False
     final_response: Optional[str] = None
     review_feedback: Optional[ReviewFeedback] = None
-    next_agent: Optional[str] = "reviewer_agent"
+    next_agent: Optional[str] = None
 
 
 
