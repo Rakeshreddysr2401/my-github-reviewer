@@ -1,19 +1,11 @@
 from dotenv import load_dotenv
+from States.state import ReviewFeedback
 
 load_dotenv()
-
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from pydantic import BaseModel, Field
-from typing import Literal, Optional, List
 from llm_config import get_llm
 llm = get_llm()
-
-
-class ReviewFeedback(BaseModel):
-    satisfied: Literal[True, False] = Field(..., description="False if the answer needs to be retried.")
-    critique: Optional[str] = Field(default=None, description="Brief critique of the response, if any.")
-    suggestions: Optional[List[str]] = Field(default=None, description="List of specific suggestions for improvement.")
 
 parser = PydanticOutputParser(pydantic_object=ReviewFeedback)
 format_instructions = parser.get_format_instructions()
@@ -44,8 +36,8 @@ Respond in the following JSON format:
 Git Diff:
 {user_query}
 
-Conversation History:
-{chat_history}
+Provided Guidelines if applicable:
+{guidelines}
 
 AI Reviewer Final Response:
 {ai_response}

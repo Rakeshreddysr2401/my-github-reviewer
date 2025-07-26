@@ -18,7 +18,7 @@ def feedback_agent(state: ReviewState):
 
     guidelines_available = chunk.guidelines is not None and chunk.guidelines.strip() != ""
     formatted_chunk = "\n".join(chunk.formatted_chunk)
-    last_ai_response = "\n".join(state.llm_response)
+    last_ai_response = "\n".join([f"lineNumber: {comment.lineNumber}  reviewComment: {comment.reviewComment}" for comment in state.llm_response.reviews])
 
     print(f"Feedback Agent called : {retry_count + 1} time")
 
@@ -29,15 +29,15 @@ def feedback_agent(state: ReviewState):
         return state
 
     # Build chat history string
-    history_str = "\n".join(
-        f"{msg.type.upper()}: {msg.content}"
-        for msg in messages
-        if hasattr(msg, 'content') and msg.content
-    )
+    # history_str = "\n".join(
+    #     f"{msg.type.upper()}: {msg.content}"
+    #     for msg in messages
+    #     if hasattr(msg, 'content') and msg.content
+    # )
 
     try:
         feedback: ReviewFeedback = feedback_agent_chain.invoke({
-            "chat_history": history_str,
+            "guidelines": guidelines_available,
             "ai_response": last_ai_response if last_ai_response else "",
             "user_query": formatted_chunk or ""
         })

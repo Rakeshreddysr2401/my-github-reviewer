@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Literal
 from services.git_services.get_pr_details import PRDetails
 
 
@@ -40,6 +40,10 @@ class ReviewComment(BaseModel):
 class ReviewResponse(BaseModel):
     reviews: List[ReviewComment] = Field(default=[], description="List of review comments on the code diff")
 
+class ReviewFeedback(BaseModel):
+    satisfied: Literal[True, False] = Field(..., description="False if the answer needs to be retried.")
+    critique: Optional[str] = Field(default=None, description="Brief critique of the response, if any.")
+    suggestions: Optional[List[str]] = Field(default=None, description="List of specific suggestions for improvement.")
 
 
 class ReviewState(BaseModel):
