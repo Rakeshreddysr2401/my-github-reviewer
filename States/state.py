@@ -44,3 +44,7 @@ class ReviewState(BaseModel):
     comments: List[dict] = Field(default_factory=list)
     guidelines_store: Optional[Any] = None
     done: bool = False
+    retry_count: int = 0
+    satisfied: bool = False
+    final_response: Optional[List[dict]] = None
+    review_feedback: Optional[dict] = None
