@@ -38,7 +38,7 @@ def retrieve_guidelines(state: ReviewState) -> ReviewState:
 
     messages = [
         SystemMessage(
-            content="You're an expert AI assistant who is capable of summarizing the guidelines in a concise manner and picking the best one to follow."),
+            content="You're an expert AI assistant who is capable of summarizing the guidelines in a concise manner and generating the  summary based on text given. make sure to include all and give summary in 200 words or less"),
         HumanMessage(
             content=f"Code Path: {path}\nCode Chunk:\n{chunk.content}\n\nRelated Guidelines:\n{chunk.guidelines}")
     ]
@@ -47,5 +47,7 @@ def retrieve_guidelines(state: ReviewState) -> ReviewState:
     summary_text = response_summary.content.strip()
     chunk.guidelines = summary_text  # Overwrite with concise summary if desired
     state.messages.append(HumanMessage(content=f"Guidelines to follow: {summary_text} in file: {file.to_file}"))
+
+    log.info(f"Retrieved guidelines for file {file.to_file} : {summary_text}")
 
     return state

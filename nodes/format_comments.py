@@ -21,7 +21,7 @@ def format_comments_node(state: ReviewState) -> ReviewState:
         # log.debug(f"Line {line_num}: {change.content}")
 
 
-    for ai_response in state.llm_response:
+    for ai_response in state.llm_response.reviews:
         try:
             line_number = int(ai_response["lineNumber"])
 

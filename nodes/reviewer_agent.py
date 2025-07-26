@@ -41,6 +41,7 @@ def reviewer_agent(state: ReviewState):
     state.messages.append(AIMessage(content=f" Reviewing chunk: {chunk.content} in file: {file.to_file} for PR: {pr_details.title}"))
     state.messages.append(AIMessage(content=f"Git Reviewer Response: {review.model_dump_json(indent=2)}"))
     state.next_agent = "feedback_agent"
+    log.info(f"Reviewer Agent Response: \n{review.model_dump_json(indent=2)}\n")
     return {
         "llm_response": review
     }

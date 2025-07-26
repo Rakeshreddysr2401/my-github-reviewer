@@ -47,6 +47,14 @@ def create_reviewer_graph():
             return "reviewer_agent"
         return END
 
+# todo going to infinite loop carefull
+    def reviewer_agent_transition(state: ReviewState):
+        """Determine next step after feedback_agent."""
+        retry_count = state.retry_count
+        if retry_count == 0:
+            return "retrieve_guidelines"
+        return "feedback_agent"
+
     builder = StateGraph(ReviewState)
 
     builder.add_node("get_next_chunk", get_next_chunk)
@@ -71,7 +79,7 @@ def create_reviewer_graph():
 
     builder.add_conditional_edges("retrieve_guidelines", guidelines_transition,{"reviewer_agent": "reviewer_agent", "feedback_agent": "feedback_agent"})
 
-    builder.add_edge("reviewer_agent", "feedback_agent")
+    builder.add_conditional_edges("reviewer_agent", reviewer_agent_transition,{"feedback_agent": "feedback_agent", "retrieve_guidelines": "retrieve_guidelines"})
 
     builder.add_conditional_edges(
         "feedback_agent",

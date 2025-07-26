@@ -61,6 +61,7 @@ def feedback_agent(state: ReviewState):
         state.satisfied = True
         return state
     state.messages.append(HumanMessage(content=f"Feedback Agent Response: {feedback.model_dump_json(indent=2)}"))
+    log.info(f"Feedback Agent Response: \n{feedback.model_dump_json(indent=2)}\n")
     return {
         "next_agent": "reviewer_agent",
         "satisfied": False,
