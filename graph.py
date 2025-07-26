@@ -23,7 +23,7 @@ def create_reviewer_graph():
         elif state.guidelines_store is not None:
             return "retrieve_guidelines"
         else:
-            return "code_reviewer"
+            return "reviewer_agent"
 
 
     def guidelines_transition(state:ReviewState):
