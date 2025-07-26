@@ -2,6 +2,8 @@
 
 from dotenv import load_dotenv
 
+from States.state import ReviewResponse
+
 load_dotenv()
 
 from langchain.output_parsers import PydanticOutputParser
@@ -12,14 +14,6 @@ from llm_config import get_llm
 
 llm = get_llm()
 
-
-class ReviewComment(BaseModel):
-    lineNumber: int = Field(..., description="Line number of the code to comment on")
-    reviewComment: str = Field(..., description="Actual review comment")
-
-
-class ReviewResponse(BaseModel):
-    reviews: List[ReviewComment] = Field(default=[], description="List of review comments on the code diff")
 
 
 parser = PydanticOutputParser(pydantic_object=ReviewResponse)

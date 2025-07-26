@@ -32,6 +32,15 @@ class File(BaseModel):
     to_file: Optional[str] = None
     chunks: List[Chunk] = Field(default_factory=list)
 
+class ReviewComment(BaseModel):
+    lineNumber: int = Field(..., description="Line number of the code to comment on")
+    reviewComment: str = Field(..., description="Actual review comment")
+
+
+class ReviewResponse(BaseModel):
+    reviews: List[ReviewComment] = Field(default=[], description="List of review comments on the code diff")
+
+
 
 class ReviewState(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -40,7 +49,7 @@ class ReviewState(BaseModel):
     current_file_index: int = 0
     current_chunk_index: int = 0
     current_prompt: Optional[str] = None
-    llm_response: Optional[List[dict]] = None
+    llm_response: Optional[ReviewResponse] = None
     comments: List[dict] = Field(default_factory=list)
     guidelines_store: Optional[Any] = None
     done: bool = False
@@ -48,3 +57,6 @@ class ReviewState(BaseModel):
     satisfied: bool = False
     final_response: Optional[List[dict]] = None
     review_feedback: Optional[dict] = None
+
+
+
