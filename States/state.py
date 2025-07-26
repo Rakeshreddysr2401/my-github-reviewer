@@ -1,3 +1,4 @@
+from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Any, Literal
 from services.git_services.get_pr_details import PRDetails
@@ -48,6 +49,7 @@ class ReviewFeedback(BaseModel):
 
 class ReviewState(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
+    messages: List[BaseMessage] = Field(default_factory=list)
     pr_details: PRDetails
     files: List[File]
     current_file_index: int = 0

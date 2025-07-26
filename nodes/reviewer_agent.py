@@ -1,6 +1,7 @@
 # nodes/reviewer_agent.py
+from langchain_core.messages import AIMessage
 from States.state import ReviewState, ReviewResponse
-from chains.reviewer_agent_chain import  reviewer_agent_chain
+from chains.reviewer_agent_chain import reviewer_agent_chain
 from utils.path_utils import normalize_file_path
 
 
@@ -8,6 +9,9 @@ def reviewer_agent(state: ReviewState):
     pr_details = state.pr_details
     file = state.files[state.current_file_index]
     chunk = file.chunks[state.current_chunk_index]
+
+    state.messages.append(
+        AIMessage(content=f" Reviewing chunk: {chunk.content} in file: {file.to_file} for PR: {pr_details.title}"))
 
     normalized_path = normalize_file_path(file.to_file)
     guidelines_available = chunk.guidelines is not None and chunk.guidelines.strip() != ""
@@ -33,7 +37,9 @@ def reviewer_agent(state: ReviewState):
             "llm_response": [],
             "error": str(e)
         }
+    state.messages.append(
+        AIMessage(content=f"Git Reviewer Response: {review.model_dump_json(indent=2)}")
+    )
     return {
-
         "llm_response": review
     }

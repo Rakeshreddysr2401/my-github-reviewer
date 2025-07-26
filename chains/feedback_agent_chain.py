@@ -13,7 +13,7 @@ format_instructions = parser.get_format_instructions()
 
 feedback_prompt = PromptTemplate.from_template(
     """
-You are a **feedback assistant**. Your role is to evaluate whether the AI code reviewer assistant gave a high-quality, useful review comment on a code diff.
+You are a **feedback assistant**. Your role is to evaluate whether the Git code reviewer assistant gave a high-quality, useful review comment on a code diff.
 
 You have access to:
 - The original code diff the AI was reviewing.
@@ -25,7 +25,7 @@ Please assess:
 2. Are the suggestions actionable and technically sound?
 3. Are the comments clearly written and under 120 words each?
 4. Are the comments aligned with any coding guidelines (if present in the history)?
-5. Would the review help improve code quality (e.g., bugs, performance, clarity, style)?
+5. Would the review help improve code quality (e.g., bugs, performance, clarity)?
 
 If any issues exist, return `satisfied=False` with critique and suggestions.
 If the response is good enough, return `satisfied=True`.
@@ -38,6 +38,9 @@ Git Diff:
 
 Provided Guidelines if applicable:
 {guidelines}
+
+Messages History:
+{history_str}
 
 AI Reviewer Final Response:
 {ai_response}

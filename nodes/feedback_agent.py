@@ -1,5 +1,6 @@
 # nodes/feedback_agent.py
 import os
+from langchain_core.messages import HumanMessage
 from chains.feedback_agent_chain import feedback_agent_chain, ReviewFeedback
 from States.state import ReviewState
 from utils.path_utils import normalize_file_path
@@ -35,9 +36,16 @@ def feedback_agent(state: ReviewState):
     #     if hasattr(msg, 'content') and msg.content
     # )
 
+    history_str = "\n".join(
+        f"{msg.type.upper()}: {msg.content}"
+        for msg in state.messages
+        if hasattr(msg, 'content') and msg.content
+    )
+
     try:
         feedback: ReviewFeedback = feedback_agent_chain.invoke({
             "guidelines": guidelines_available,
+            "history": history_str,
             "ai_response": last_ai_response if last_ai_response else "",
             "user_query": formatted_chunk or ""
         })
@@ -54,7 +62,7 @@ def feedback_agent(state: ReviewState):
         print("Satisfied by reviewer")
         state.satisfied = True
         return state
-
+    state.messages.append(HumanMessage(content=f"Feedback Agent Response: {feedback.model_dump_json(indent=2)}"))
     return {
         "satisfied": False,
         "final_response": last_ai_response if satisfied else state.final_response,
