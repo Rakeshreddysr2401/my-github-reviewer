@@ -21,10 +21,8 @@ def infer_topic_from_filename(filename: str) -> str:
     return "default"
 
 def retrieve_instructions(file_path: str="default", query: str = "How to review this code?") -> List[str]:
-    log.info(f"🔍 Fetching instructions for: {file_path}")
     topic = infer_topic_from_filename(file_path)
-    log.info(f"📁 Inferred topic: {topic}")
-
+    log.info(f"🔍 Fetching instructions for: {file_path}  on   📁 Inferred topic: {topic}")
     base_dir = Path(__file__).resolve().parent.parent.parent
     persist_path = base_dir / "vectorstores" / "chroma_db"
 

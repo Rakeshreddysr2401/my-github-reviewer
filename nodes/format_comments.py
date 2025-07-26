@@ -47,7 +47,7 @@ def format_comments_node(state: ReviewState) -> ReviewState:
 
         except (KeyError, TypeError, ValueError) as e:
             log.error(f"Error creating comment from AI response: {e}, Response: {ai_response}")
-    log.debug(f"Created {len(comments)} valid comments")
+    log.info(f"Created {len(comments)} valid comments")
 
     state.comments.extend(comments)
 

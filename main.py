@@ -14,7 +14,8 @@ from graph import graph
 log = get_logger()
 
 def main():
-    print("=============STARTED CODE REVIEW PROCESS================")
+    log.info(
+        "\n--------------------------------------------------------------------------- STARTED CODE REVIEWING ---------------------------------------------------------\n")
     """Main function to execute the code review process."""
     try:
         # ✅ Ensure vectorstore and get the handle
@@ -61,7 +62,8 @@ def main():
                 sys.exit(1)
         else:
             log.warning("No issues found, no comments to post")
-        print("=============CODE REVIEW PROCESS COMPLETED================")
+        log.info(
+            "\n--------------------------------------------------------------------------- ENDED REVIEWING THE CODE---------------------------------------------------------\n")
 
     except Exception as error:
         log.exception(f"Error in main: {error}")

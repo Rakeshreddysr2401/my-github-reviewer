@@ -3,9 +3,11 @@ from langchain_core.messages import AIMessage
 from States.state import ReviewState, ReviewResponse
 from chains.reviewer_agent_chain import reviewer_agent_chain
 from utils.path_utils import normalize_file_path
-
+from utils.logger import get_logger
+log=get_logger()
 
 def reviewer_agent(state: ReviewState):
+
     pr_details = state.pr_details
     file = state.files[state.current_file_index]
     chunk = file.chunks[state.current_chunk_index]
@@ -15,9 +17,10 @@ def reviewer_agent(state: ReviewState):
     guidelines_available = chunk.guidelines is not None and chunk.guidelines.strip() != ""
     formatted_chunk = "\n".join(chunk.formatted_chunk)
 
-    critique = state.review_feedback.get("critique") if state.review_feedback else "None provided."
-    suggestion_text = "\n".join(state.review_feedback.get("suggestions", [])) if state.review_feedback else "None."
+    critique = state.review_feedback.critique if state.review_feedback else "None provided."
+    suggestion_text = "\n".join(state.review_feedback.suggestions) if state.review_feedback else "None."
 
+    log.info(f"Reviewer Agent called  {state.retry_count+1} time for file: {normalized_path}, chunk index: {state.current_chunk_index}, retry count: {state.retry_count}")
     try:
         review: ReviewResponse = reviewer_agent_chain.invoke({
             "pr_title": pr_details.title,

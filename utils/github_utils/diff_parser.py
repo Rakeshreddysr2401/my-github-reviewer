@@ -15,7 +15,8 @@ def parse_diff(diff_text: str) -> List[File]:
     current_chunk = None
     target_line_number = 0
 
-    print("======================Starting to parse diff====================")
+    log.info(
+        "\n---------------------------------------------------------------------------STARTED PARSING DIFF---------------------------------------------------------\n")
     lines = diff_text.splitlines()
     line_index = 0
     in_binary_file = False

@@ -69,7 +69,7 @@ def create_reviewer_graph():
         },
     )
 
-    builder.add_edge("retrieve_guidelines", guidelines_transition,{"reviewer_agent": "reviewer_agent", "feedback_agent": "feedback_agent"})
+    builder.add_conditional_edges("retrieve_guidelines", guidelines_transition,{"reviewer_agent": "reviewer_agent", "feedback_agent": "feedback_agent"})
 
     builder.add_edge("reviewer_agent", "feedback_agent")
 

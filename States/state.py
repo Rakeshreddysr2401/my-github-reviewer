@@ -61,8 +61,8 @@ class ReviewState(BaseModel):
     done: bool = False
     retry_count: int = 0
     satisfied: bool = False
-    final_response: Optional[List[dict]] = None
-    review_feedback: Optional[dict] = None
+    final_response: Optional[str] = None
+    review_feedback: Optional[ReviewFeedback] = None
     next_agent: Optional[str] = "reviewer_agent"
 
 

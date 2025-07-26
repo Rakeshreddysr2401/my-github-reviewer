@@ -45,7 +45,7 @@ def retrieve_guidelines(state: ReviewState) -> ReviewState:
 
     response_summary: AIMessage = llm.invoke(messages)
     summary_text = response_summary.content.strip()
-    state.chunk.guidelines = summary_text  # Overwrite with concise summary if desired
+    chunk.guidelines = summary_text  # Overwrite with concise summary if desired
     state.messages.append(HumanMessage(content=f"Guidelines to follow: {summary_text} in file: {file.to_file}"))
 
     return state

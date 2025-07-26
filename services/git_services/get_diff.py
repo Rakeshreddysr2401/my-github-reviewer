@@ -13,7 +13,8 @@ def get_diff(pr_details:PRDetails) -> str:
     """
     Fetches the raw .diff of a pull request from GitHub.
     """
-    print("=============STARTED GETTING DIFF================")
+    log.info(
+        "\n---------------------------------------------------------------------------Fetching Git Diff for the PR---------------------------------------------------------\n")
     full_repo_name = f"{pr_details.owner}/{pr_details.repo}"
     log.info(f"Attempting to fetch diff for PR #{pr_details.pull_number} from {full_repo_name}")
     try:
