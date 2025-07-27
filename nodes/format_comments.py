@@ -57,6 +57,7 @@ def format_comments_node(state: ReviewState) -> ReviewState:
     state.comments.extend(comments)
 
     state.current_chunk_index += 1
+    state.done = True
 
     return state
 

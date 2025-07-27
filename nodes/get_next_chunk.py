@@ -19,6 +19,7 @@ def get_next_chunk(state: ReviewState) -> ReviewState:
             state.review_feedback = None
             state.llm_response = None
             state.next_agent = "reviewer_agent"
+            state.done = False
             state.messages = [SystemMessage(content="You are an AI assistant. Observe the conversation history between a git code reviewer and feedback agent.")]
             return state
         else:
