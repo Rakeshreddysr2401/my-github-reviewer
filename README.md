@@ -47,3 +47,19 @@ START
     [Loop back to get_next_chunk for next chunk/file]
           ↓
     [Process until all files/chunks done] → END
+
+
+New Suggested Flowchart:
+
+
+get_next_chunk 
+    ↓
+reviewer_agent (basic review with no guidelines)
+    ↓
+retrieve_guidelines_v1 (code + initial review context)
+    ↓
+feedback_agent_v1 
+    ↓
+[if not satisfied] → retrieve_guidelines_v2 (code + review + feedback context)
+    ↓
+reviewer_agent_v2 (enhanced with richer guidelines)

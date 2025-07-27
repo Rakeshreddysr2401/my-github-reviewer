@@ -21,8 +21,8 @@ def create_reviewer_graph():
         if state.done:
             log.info("All chunks processed, ending review.")
             return END
-        elif state.guidelines_store is not None and state.retry_count == 0:
-            return "retrieve_guidelines"  # ONLY on first attempt
+        # elif state.guidelines_store is not None and state.retry_count == 0:
+        #     return "retrieve_guidelines"  # ONLY on first attempt
         else:
             return "reviewer_agent"
 
@@ -39,9 +39,9 @@ def create_reviewer_graph():
         retry_count = state.retry_count
         satisfied = state.satisfied
 
-        if retry_count == 1 and state.guidelines_store is not None:
-            return "retrieve_guidelines"
-        elif satisfied or retry_count > MAX_RETRIES:
+        # if retry_count == 1 and state.guidelines_store is not None:
+        #     return "retrieve_guidelines"
+        if satisfied or retry_count > MAX_RETRIES:
             return "format_comments"
         elif not satisfied and retry_count <= MAX_RETRIES:
             return "reviewer_agent"
