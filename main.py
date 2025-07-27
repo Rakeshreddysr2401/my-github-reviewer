@@ -55,10 +55,17 @@ def main():
 
         # Run the graph
         config = {"checkpointer": None}
+        # try:
+        #     final_state = graph.invoke(initial_state, config)
+        # except GraphRecursionError as e:
+        #     log.warning("Recursion error detected, Possible infinite loop / missing stop condition in the graph. Check your graph configuration.")
+
+        final_state = None
         try:
             final_state = graph.invoke(initial_state, config)
-        except GraphRecursionError as e:
-            log.warning("Recursion error detected, Possible infinite loop / missing stop condition in the graph. Check your graph configuration.")
+        except GraphRecursionError:
+            log.warning("Recursion error detected. Check your graph configuration for stop conditions.")
+            sys.exit(1)  # Exit cleanly if the graph failed
 
         # Extract final state object
         if isinstance(final_state, dict):
