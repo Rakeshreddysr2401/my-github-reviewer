@@ -48,4 +48,6 @@ Final AI Reviewer Response:
 """
 )
 
+feedback_prompt = feedback_prompt.partial(format_instructions=format_instructions)
+
 feedback_agent_chain = feedback_prompt | llm | parser

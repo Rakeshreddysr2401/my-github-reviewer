@@ -23,6 +23,10 @@ def format_comments_node(state: ReviewState) -> ReviewState:
 
     for ai_response in state.llm_response.reviews:
         try:
+            if ai_response.lineNumber is None or ai_response.reviewComment is None:
+                log.warning(f"Skipping AI response with missing lineNumber or reviewComment: {ai_response}")
+                continue
+
             line_number = int(ai_response.lineNumber)
 
             if line_number not in line_map:
@@ -35,6 +39,7 @@ def format_comments_node(state: ReviewState) -> ReviewState:
                 log.warning(f"Line {line_number} which ai commented is not an added line: {change.content} so Ignoring... ")
                 continue
 
+
             path = normalize_file_path(file.to_file)
             comment = {
                 "body": ai_response.reviewComment.strip(),
@@ -42,12 +47,12 @@ def format_comments_node(state: ReviewState) -> ReviewState:
                 "line": line_number,
             }
 
-            log.debug(f"Created comment: {comment}")
+            log.debug(f"formated comment: {comment}")
             comments.append(comment)
 
         except (KeyError, TypeError, ValueError) as e:
             log.error(f"Error creating comment from AI response: {e}, Response: {ai_response}")
-    log.info(f"Created {len(comments)} valid comments")
+    log.info(f"Formated {len(comments)} valid comments")
 
     state.comments.extend(comments)
 
