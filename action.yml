@@ -34,6 +34,14 @@ inputs:
     description: "Temperature for the model (0.0 for deterministic, 1.0 for creative)"
     required: false
     default: "0.5"
+  USE_VECTORSTORE:
+    description: "Use vector store for specific guidelines"
+    required: false
+    default: "false"
+  MAX_LOOP:
+    description: "For Feedback Agent and Reviewer Agent to run in loop"
+    required: false
+    default: "2"
 
 runs:
   using: "composite"
@@ -58,3 +66,5 @@ runs:
         MODEL: ${{ inputs.MODEL }}
         PROVIDER: ${{ inputs.PROVIDER }}
         TEMPERATURE: ${{ inputs.TEMPERATURE }}
+        USE_VECTORSTORE: ${{ inputs.USE_VECTORSTORE }}
+        MAX_LOOP: ${{inputs.MAX_LOOP}}
