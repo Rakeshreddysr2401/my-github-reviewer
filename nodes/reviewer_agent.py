@@ -45,7 +45,8 @@ def reviewer_agent(state: ReviewState) -> ReviewState:
             "pr_description": pr_details.description or "",
             "file_path": normalized_path,
             "code_diff": formatted_chunk,
-            "history_messages": history_str,
+            # "history_messages": history_str,
+            "guidelines": chunk.guidelines or "No guidelines provided.",
             "critique": critique,
             "suggestion_text": suggestion_text,
         })
