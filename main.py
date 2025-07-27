@@ -1,6 +1,9 @@
 # main.py (improved)
 import sys
 from uuid import uuid4
+
+from langgraph.errors import GraphRecursionError
+
 from States.state import ReviewState
 from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
@@ -52,7 +55,10 @@ def main():
 
         # Run the graph
         config = {"checkpointer": None}
-        final_state = graph.invoke(initial_state, config)
+        try:
+            final_state = graph.invoke(initial_state, config)
+        except GraphRecursionError as e:
+            log.warning("Recursion error detected, Possible infinite loop / missing stop condition in the graph. Check your graph configuration.")
 
         # Extract final state object
         if isinstance(final_state, dict):
