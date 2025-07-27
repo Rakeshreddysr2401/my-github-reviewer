@@ -1,4 +1,4 @@
-
+# main.py (improved)
 import sys
 from uuid import uuid4
 from States.state import ReviewState
@@ -11,48 +11,58 @@ from utils.logger import get_logger
 import os
 from utils.vectorstore_utils import ensure_vectorstore_exists_and_get
 from graph import graph
+
 log = get_logger()
 
+
 def main():
-    log.info(
-        "\n--------------------------------------------------------------------------- STARTED CODE REVIEWING ---------------------------------------------------------\n")
     """Main function to execute the code review process."""
+    log.info("\n" + "=" * 100 + " STARTED CODE REVIEW " + "=" * 100 + "\n")
+
     try:
-        # ✅ Ensure vectorstore and get the handle
+        # Initialize guideline store if enabled
         guideline_store = None
         if os.environ.get('USE_VECTORSTORE', 'false').lower() == 'true':
             log.info("Using vectorstore for coding guidelines")
-            guideline_store=ensure_vectorstore_exists_and_get()
-        #Used to get PR details
+            guideline_store = ensure_vectorstore_exists_and_get()
+
+        # Get PR details and diff
         pr_details: PRDetails = get_pr_details()
-        #Used to get difference in PR
         diff = get_diff(pr_details)
+
         if not diff:
             log.warning("No diff found, nothing to review")
             return
-        #Used to parse the diff into a structured format
+
+        # Parse and filter diff
         parsed_diff = parse_diff(diff)
-        #List of Files to Include
         filtered_diff = filter_files_by_exclude_patterns(parsed_diff)
+
         if not filtered_diff:
             log.warning("No files to analyze after filtering")
             return
 
+        # Initialize state
         initial_state = ReviewState(
             pr_details=pr_details,
-            files=parsed_diff,
+            files=filtered_diff,  # Use filtered diff
             comments=[],
             guidelines_store=guideline_store
         )
-        # thread_id = str(uuid4())
-        # config = {"configurable": {"thread_id": thread_id}}
+
+        # Run the graph
         config = {"checkpointer": None}
+        final_state = graph.invoke(initial_state, config)
 
+        # Extract final state object
+        if isinstance(final_state, dict):
+            final_state_obj = ReviewState(**final_state)
+        else:
+            final_state_obj = final_state
 
-        final_state = graph.invoke(initial_state,config)
-        final_state_obj = ReviewState(**final_state)
-        print(final_state_obj.comments)
         comments = final_state_obj.comments
+        log.info(f"Generated {len(comments)} total comments")
+
         if comments:
             try:
                 review_id = create_review_comment(pr_details, comments)
@@ -61,9 +71,9 @@ def main():
                 log.error(f"Failed to post comments: {e}")
                 sys.exit(1)
         else:
-            log.warning("No issues found, no comments to post")
-        log.info(
-            "\n--------------------------------------------------------------------------- ENDED REVIEWING THE CODE---------------------------------------------------------\n")
+            log.info("No issues found, no comments to post")
+
+        log.info("\n" + "=" * 100 + " COMPLETED CODE REVIEW " + "=" * 100 + "\n")
 
     except Exception as error:
         log.exception(f"Error in main: {error}")

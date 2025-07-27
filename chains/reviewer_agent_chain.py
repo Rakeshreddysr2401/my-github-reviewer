@@ -1,7 +1,5 @@
 # chains/reviewer_agent_chain.py
-
 from dotenv import load_dotenv
-
 from States.state import ReviewResponse
 
 load_dotenv()
@@ -12,13 +10,11 @@ from llm_config import get_llm
 
 llm = get_llm()
 
-
-
 parser = PydanticOutputParser(pydantic_object=ReviewResponse)
 format_instructions = parser.get_format_instructions()
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert in ** git code reviewer**. Provide feedback in the requested JSON format.
+    ("system", """You are an expert git code reviewer. Provide feedback in the requested JSON format.
 
 {format_instructions}
 
@@ -46,5 +42,7 @@ Git diff to review:
 {code_diff}
 ```""")
 ])
+
 reviewer_prompt = reviewer_prompt.partial(format_instructions=format_instructions)
 reviewer_agent_chain = reviewer_prompt | llm | parser
+

@@ -1,3 +1,4 @@
+# chains/feedback_agent_chain.py
 from dotenv import load_dotenv
 from States.state import ReviewFeedback
 
@@ -5,11 +6,11 @@ load_dotenv()
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from llm_config import get_llm
+
 llm = get_llm()
 
 parser = PydanticOutputParser(pydantic_object=ReviewFeedback)
 format_instructions = parser.get_format_instructions()
-
 
 feedback_prompt = PromptTemplate.from_template(
     """
@@ -18,7 +19,7 @@ You are a **feedback assistant**. Your role is to evaluate whether the Git code 
 You have access to:
 - The original code diff the AI was reviewing.
 - The full conversation history between user and the reviewer.
-- The AI reviewer’s final response.
+- The AI reviewer's final response.
 
 Please assess:
 1. Does the reviewer correctly reference the diff content (only added lines)?
@@ -47,5 +48,4 @@ AI Reviewer Final Response:
     }
 )
 
-# Final chain: Prompt → LLM → Pydantic parser
 feedback_agent_chain = feedback_prompt | llm | parser
