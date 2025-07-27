@@ -64,7 +64,7 @@ def retrieve_guidelines(state: ReviewState) -> ReviewState:
             chunk.guidelines = summary_text
 
             state.messages.append(HumanMessage(content=f"Guidelines to follow: {summary_text} in file: {file.to_file}"))
-            log.info(f"Retrieved and summarized guidelines for file {file.to_file}")
+            log.info(f"Retrieved and summarized guidelines for file {file.to_file}\nSummary: {summary_text}")
         else:
             state.messages.append(HumanMessage(content=f"No specific guidelines found for file: {file.to_file}"))
             log.info(f"No guidelines found for file {file.to_file}")

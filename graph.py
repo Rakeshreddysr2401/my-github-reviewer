@@ -16,12 +16,13 @@ MAX_RETRIES = int(os.getenv("MAX_LOOP", "2"))
 def create_reviewer_graph():
     """Create and configure the LangGraph state machine for code review."""
 
+
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
             log.info("All chunks processed, ending review.")
             return END
-        elif state.guidelines_store is not None:
-            return "retrieve_guidelines"
+        elif state.guidelines_store is not None and state.retry_count == 0:
+            return "retrieve_guidelines"  # ONLY on first attempt
         else:
             return "reviewer_agent"
 
