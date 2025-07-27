@@ -43,7 +43,7 @@ def feedback_agent(state: ReviewState) -> ReviewState:
         return state
 
     history_str = "\n".join(
-        f"{msg.type.upper()}: {msg.content}"
+        f"{msg.type.upper()}: {msg.content}\n"
         for msg in state.messages
         if hasattr(msg, 'content') and msg.content
     )

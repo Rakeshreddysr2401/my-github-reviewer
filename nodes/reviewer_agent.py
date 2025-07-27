@@ -32,13 +32,20 @@ def reviewer_agent(state: ReviewState) -> ReviewState:
 
     log.info(f"Reviewer Agent called {state.retry_count + 1} time for file: {normalized_path}, chunk index: {state.current_chunk_index}")
 
+
+    history_str = "\n".join(
+        f"{msg.type.upper()}: {msg.content}\n"
+        for msg in state.messages
+        if hasattr(msg, 'content') and msg.content
+    )
+
     try:
         review = reviewer_agent_chain.invoke({
             "pr_title": pr_details.title,
             "pr_description": pr_details.description or "",
             "file_path": normalized_path,
             "code_diff": formatted_chunk,
-            "history_messages": "\n".join([msg.content for msg in state.messages if hasattr(msg, 'content')]),
+            "history_messages": history_str,
             "critique": critique,
             "suggestion_text": suggestion_text,
         })
