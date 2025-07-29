@@ -1,13 +1,13 @@
-# main.py (improved)
+# main.py
 import sys
 from uuid import uuid4
 
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.errors import GraphRecursionError
 
 from States.state import ReviewState
 from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
-from services.git_services.git_review_comment_sender import create_review_comment
 from services.git_services.get_pr_details import PRDetails, get_pr_details
 from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
@@ -48,24 +48,28 @@ def main():
         # Initialize state
         initial_state = ReviewState(
             pr_details=pr_details,
-            files=filtered_diff,  # Use filtered diff
+            files=filtered_diff,
             comments=[],
             guidelines_store=guideline_store
         )
 
         # Run the graph
-        config = {"checkpointer": None}
-        # try:
-        #     final_state = graph.invoke(initial_state, config)
-        # except GraphRecursionError as e:
-        #     log.warning("Recursion error detected, Possible infinite loop / missing stop condition in the graph. Check your graph configuration.")
+        checkpointer = MemorySaver()
+        checkpoint_id = uuid4()
+
+        config = {
+            "checkpointer": checkpointer,
+            "configurable": {
+                "thread_id": checkpoint_id
+            }
+        }
 
         final_state = None
         try:
             final_state = graph.invoke(initial_state, config)
         except GraphRecursionError:
             log.warning("Recursion error detected. Check your graph configuration for stop conditions.")
-            sys.exit(1)  # Exit cleanly if the graph failed
+            sys.exit(1)
 
         # Extract final state object
         if isinstance(final_state, dict):
@@ -73,18 +77,14 @@ def main():
         else:
             final_state_obj = final_state
 
-        comments = final_state_obj.comments
-        log.info(f"Generated {len(comments)} total comments")
-
-        if comments:
-            try:
-                review_id = create_review_comment(pr_details, comments)
-                log.info(f"Successfully posted review with ID: {review_id}")
-            except Exception as e:
-                log.error(f"Failed to post comments: {e}")
+        # The git_comment_sender node has already handled posting comments
+        # Check the final response for success/failure
+        if final_state_obj.final_response:
+            log.info(f"Review process completed: {final_state_obj.final_response}")
+            if "Failed" in final_state_obj.final_response:
                 sys.exit(1)
         else:
-            log.info("No issues found, no comments to post")
+            log.info("Review process completed successfully")
 
         log.info("\n" + "=" * 100 + " COMPLETED CODE REVIEW " + "=" * 100 + "\n")
 

@@ -1,4 +1,4 @@
-# graph.py
+# graph.py (updated)
 from langgraph.graph import StateGraph, END
 from States.state import ReviewState
 from nodes.format_comments import format_comments_node
@@ -6,6 +6,7 @@ from nodes.get_next_chunk import get_next_chunk
 from nodes.retrieve_guidelines import retrieve_guidelines
 from nodes.feedback_agent import feedback_agent, MAX_RETRIES
 from nodes.reviewer_agent import reviewer_agent
+from nodes.git_comment_sender import git_comment_sender  # New import
 from utils.logger import get_logger
 import os
 
@@ -16,13 +17,15 @@ MAX_RETRIES = int(os.getenv("MAX_LOOP", "2"))
 def create_reviewer_graph():
     """Create and configure the LangGraph state machine for code review."""
 
-
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
-            log.info("All chunks processed, ending review.")
-            return END
-        # elif state.guidelines_store is not None and state.retry_count == 0:
-        #     return "retrieve_guidelines"  # ONLY on first attempt
+            # Check if we've processed all files
+            if state.current_file_index >= len(state.files):
+                log.info("All files processed, sending comments to GitHub.")
+                return "git_comment_sender"
+            else:
+                log.info("Current file processed, continuing to next.")
+                return "reviewer_agent"
         else:
             return "reviewer_agent"
 
@@ -39,8 +42,6 @@ def create_reviewer_graph():
         retry_count = state.retry_count
         satisfied = state.satisfied
 
-        # if retry_count == 1 and state.guidelines_store is not None:
-        #     return "retrieve_guidelines"
         if satisfied or retry_count > MAX_RETRIES:
             return "format_comments"
         elif not satisfied and retry_count <= MAX_RETRIES:
@@ -62,6 +63,7 @@ def create_reviewer_graph():
     builder.add_node("reviewer_agent", reviewer_agent)
     builder.add_node("feedback_agent", feedback_agent)
     builder.add_node("format_comments", format_comments_node)
+    builder.add_node("git_comment_sender", git_comment_sender)  # New node
 
     builder.set_entry_point("get_next_chunk")
 
@@ -70,7 +72,7 @@ def create_reviewer_graph():
         "get_next_chunk",
         get_next_chunk_branch,
         {
-            END: END,
+            "git_comment_sender": "git_comment_sender",
             "retrieve_guidelines": "retrieve_guidelines",
             "reviewer_agent": "reviewer_agent",
         },
@@ -107,6 +109,7 @@ def create_reviewer_graph():
     )
 
     builder.add_edge("format_comments", "get_next_chunk")
+    builder.add_edge("git_comment_sender", END)  # New edge to end after sending comments
 
     return builder.compile()
 
