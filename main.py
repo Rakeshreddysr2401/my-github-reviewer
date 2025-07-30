@@ -1,26 +1,26 @@
-# main.py
 import sys
-from uuid import uuid4
 import os
+from uuid import uuid4
 
-from langgraph.checkpoint.memory import MemorySaver
 from States.state import ReviewState
-from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
-from services.git_services.get_pr_details import PRDetails, get_pr_details
+from services.git_services.get_pr_details import get_pr_details, PRDetails
+from utils.github_utils.diff_parser import parse_diff
 from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
 from utils.vectorstore_utils import ensure_vectorstore_exists_and_get
-from graph import graph
+from graph import graph  # your compiled langgraph
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 log = get_logger()
+
+DB_DIR = "state_db"
 
 
 def run_initial_review():
     log.info("\n" + "=" * 100 + " STARTED INITIAL CODE REVIEW " + "=" * 100 + "\n")
 
     try:
-        # Init vectorstore
         guideline_store = None
         if os.environ.get("USE_VECTORSTORE", "false").lower() == "true":
             guideline_store = ensure_vectorstore_exists_and_get()
@@ -37,6 +37,8 @@ def run_initial_review():
             log.warning("No files to analyze after filtering")
             return
 
+        checkpoint_id = os.environ.get("THREAD_ID", str(uuid4()))
+
         initial_state = ReviewState(
             pr_details=pr_details,
             files=filtered_diff,
@@ -45,11 +47,8 @@ def run_initial_review():
             mode="initial_review"
         )
 
-        checkpointer = MemorySaver()
-        checkpoint_id = os.environ.get("THREAD_ID", str(uuid4()))  # Persist ID if passed
-
         config = {
-            "checkpointer": checkpointer,
+            "checkpointer": SqliteSaver.from_directory(DB_DIR),
             "configurable": {
                 "thread_id": checkpoint_id
             }
@@ -69,23 +68,24 @@ def run_reply_mode():
 
     try:
         pr_details = get_pr_details()
-
         reply_comment_id = os.environ.get("REPLY_COMMENT_ID")
         if not reply_comment_id:
             raise ValueError("REPLY_COMMENT_ID not provided for reply mode")
 
-        checkpoint_id = os.environ.get("THREAD_ID", str(uuid4()))
+        checkpoint_id = os.environ.get("THREAD_ID")
+        if not checkpoint_id:
+            raise ValueError("THREAD_ID is required for reply mode to restore previous thread state")
 
         reply_state = ReviewState(
             pr_details=pr_details,
-            files=[],  # Not required for replies
+            files=[],  # Not needed in reply mode
             comments=[],
-            mode="reply_mode",
-            reply_comment_id=reply_comment_id
+            reply_comment_id=reply_comment_id,
+            mode="reply_mode"
         )
 
         config = {
-            "checkpointer": MemorySaver(),
+            "checkpointer": SqliteSaver.from_directory(DB_DIR),
             "configurable": {
                 "thread_id": checkpoint_id
             }
@@ -102,7 +102,6 @@ def run_reply_mode():
 
 def main():
     mode = os.environ.get("MODE", "initial_review")
-
     if mode == "initial_review":
         run_initial_review()
     elif mode == "reply_mode":
