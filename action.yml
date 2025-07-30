@@ -42,6 +42,10 @@ inputs:
     description: "For Feedback Agent and Reviewer Agent to run in loop"
     required: false
     default: "2"
+  MODE:
+    description: "Mode of operation (e.g., reply_mode, initial_review)"
+    required: false
+    default: "initial_review"
 
 runs:
   using: "composite"
@@ -68,3 +72,4 @@ runs:
         TEMPERATURE: ${{ inputs.TEMPERATURE }}
         USE_VECTORSTORE: ${{ inputs.USE_VECTORSTORE }}
         MAX_LOOP: ${{inputs.MAX_LOOP}}
+        MODE: ${{ inputs.MODE }}
