@@ -1,12 +1,15 @@
-# graph.py (updated)
+# graph.py (updated for conversation mode)
 from langgraph.graph import StateGraph, END
 from States.state import ReviewState
 from nodes.format_comments import format_comments_node
 from nodes.get_next_chunk import get_next_chunk
 from nodes.retrieve_guidelines import retrieve_guidelines
-from nodes.feedback_agent import feedback_agent, MAX_RETRIES
+from nodes.feedback_agent import feedback_agent
 from nodes.reviewer_agent import reviewer_agent
-from nodes.git_comment_sender import git_comment_sender  # New import
+from nodes.git_comment_sender import git_comment_sender_node
+from nodes.reply_handler import reply_handler_node
+from nodes.conversation_agent import conversation_agent_node
+from nodes.reply_sender import reply_sender_node
 from utils.logger import get_logger
 import os
 
@@ -15,11 +18,18 @@ MAX_RETRIES = int(os.getenv("MAX_LOOP", "2"))
 
 
 def create_reviewer_graph():
-    """Create and configure the LangGraph state machine for code review."""
+    """Create and configure the LangGraph state machine for code review with conversation support."""
+
+    def mode_router(state: ReviewState) -> str:
+        """Route based on current mode."""
+        if state.mode == "initial_review":
+            return "get_next_chunk"
+        elif state.mode == "reply_mode":
+            return "reply_handler"
+        return END
 
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
-            # Check if we've processed all files
             if state.current_file_index >= len(state.files):
                 log.info("All files processed, sending comments to GitHub.")
                 return "git_comment_sender"
@@ -29,16 +39,27 @@ def create_reviewer_graph():
         else:
             return "reviewer_agent"
 
+    def reply_handler_branch(state: ReviewState) -> str:
+        """Branch after reply handler."""
+        if state.done:
+            return END
+        else:
+            return "conversation_agent"
+
+    def conversation_agent_branch(state: ReviewState) -> str:
+        """Branch after conversation agent."""
+        if state.current_thread_index >= len(state.conversation_threads):
+            return "reply_sender"
+        else:
+            return "conversation_agent"  # Process next thread
+
     def guidelines_transition(state: ReviewState) -> str:
-        """Determine next step after guidelines retrieval."""
         next_agent = state.next_agent
         if next_agent in ["reviewer_agent", "feedback_agent"]:
             return next_agent
-        log.error("No valid next agent specified after guidelines retrieval.")
         return END
 
     def feedback_agent_transition(state: ReviewState) -> str:
-        """Determine next step after feedback agent."""
         retry_count = state.retry_count
         satisfied = state.satisfied
 
@@ -49,7 +70,6 @@ def create_reviewer_graph():
         return END
 
     def reviewer_agent_transition(state: ReviewState) -> str:
-        """Determine next step after reviewer agent."""
         retry_count = state.retry_count
         if retry_count == 0 and state.guidelines_store is not None:
             return "retrieve_guidelines"
@@ -57,25 +77,40 @@ def create_reviewer_graph():
 
     builder = StateGraph(ReviewState)
 
-    # Add nodes
+    # Add all nodes
+    builder.add_node("mode_router", lambda state: state)  # Dummy node for routing
     builder.add_node("get_next_chunk", get_next_chunk)
     builder.add_node("retrieve_guidelines", retrieve_guidelines)
     builder.add_node("reviewer_agent", reviewer_agent)
     builder.add_node("feedback_agent", feedback_agent)
     builder.add_node("format_comments", format_comments_node)
-    builder.add_node("git_comment_sender", git_comment_sender)  # New node
+    builder.add_node("git_comment_sender", git_comment_sender_node)
+    builder.add_node("reply_handler", reply_handler_node)
+    builder.add_node("conversation_agent", conversation_agent_node)
+    builder.add_node("reply_sender", reply_sender_node)
 
-    builder.set_entry_point("get_next_chunk")
+    # Set entry point
+    builder.set_entry_point("mode_router")
 
     # Add conditional edges
+    builder.add_conditional_edges(
+        "mode_router",
+        mode_router,
+        {
+            "get_next_chunk": "get_next_chunk",
+            "reply_handler": "reply_handler",
+            END: END
+        }
+    )
+
+    # Original review flow
     builder.add_conditional_edges(
         "get_next_chunk",
         get_next_chunk_branch,
         {
             "git_comment_sender": "git_comment_sender",
-            "retrieve_guidelines": "retrieve_guidelines",
             "reviewer_agent": "reviewer_agent",
-        },
+        }
     )
 
     builder.add_conditional_edges(
@@ -109,13 +144,30 @@ def create_reviewer_graph():
     )
 
     builder.add_edge("format_comments", "get_next_chunk")
-    builder.add_edge("git_comment_sender", END)  # New edge to end after sending comments
+    builder.add_edge("git_comment_sender", END)
+
+    # Conversation flow
+    builder.add_conditional_edges(
+        "reply_handler",
+        reply_handler_branch,
+        {
+            "conversation_agent": "conversation_agent",
+            END: END
+        }
+    )
+
+    builder.add_conditional_edges(
+        "conversation_agent",
+        conversation_agent_branch,
+        {
+            "conversation_agent": "conversation_agent",
+            "reply_sender": "reply_sender"
+        }
+    )
+
+    builder.add_edge("reply_sender", END)
 
     return builder.compile()
 
 
 graph = create_reviewer_graph()
-
-if __name__ == "__main__":
-    print("Graph created successfully!")
-    print(graph)

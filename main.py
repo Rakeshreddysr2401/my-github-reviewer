@@ -1,6 +1,7 @@
 # main.py
 import sys
 from uuid import uuid4
+import time
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.errors import GraphRecursionError
@@ -18,9 +19,9 @@ from graph import graph
 log = get_logger()
 
 
-def main():
-    """Main function to execute the code review process."""
-    log.info("\n" + "=" * 100 + " STARTED CODE REVIEW " + "=" * 100 + "\n")
+def run_initial_review():
+    """Run the initial code review process."""
+    log.info("\n" + "=" * 100 + " STARTED INITIAL CODE REVIEW " + "=" * 100 + "\n")
 
     try:
         # Initialize guideline store if enabled
@@ -45,12 +46,13 @@ def main():
             log.warning("No files to analyze after filtering")
             return
 
-        # Initialize state
+        # Initialize state for initial review
         initial_state = ReviewState(
             pr_details=pr_details,
             files=filtered_diff,
             comments=[],
-            guidelines_store=guideline_store
+            guidelines_store=guideline_store,
+            mode="initial_review"
         )
 
         # Run the graph
@@ -64,32 +66,70 @@ def main():
             }
         }
 
-        final_state = None
-        try:
-            final_state = graph.invoke(initial_state, config)
-        except GraphRecursionError:
-            log.warning("Recursion error detected. Check your graph configuration for stop conditions.")
-            sys.exit(1)
+        final_state = graph.invoke(initial_state, config)
 
-        # Extract final state object
-        if isinstance(final_state, dict):
-            final_state_obj = ReviewState(**final_state)
-        else:
-            final_state_obj = final_state
-
-        # The git_comment_sender node has already handled posting comments
-        # Check the final response for success/failure
-        if final_state_obj.final_response:
-            log.info(f"Review process completed: {final_state_obj.final_response}")
-            if "Failed" in final_state_obj.final_response:
-                sys.exit(1)
-        else:
-            log.info("Review process completed successfully")
-
-        log.info("\n" + "=" * 100 + " COMPLETED CODE REVIEW " + "=" * 100 + "\n")
+        log.info("\n" + "=" * 100 + " COMPLETED INITIAL CODE REVIEW " + "=" * 100 + "\n")
+        return final_state
 
     except Exception as error:
-        log.exception(f"Error in main: {error}")
+        log.exception(f"Error in initial review: {error}")
+        sys.exit(1)
+
+
+def run_reply_monitoring():
+    """Monitor for user replies and respond to them."""
+    log.info("\n" + "=" * 100 + " STARTED REPLY MONITORING " + "=" * 100 + "\n")
+
+    pr_details = get_pr_details()
+
+    while True:
+        try:
+            # Initialize state for reply mode
+            reply_state = ReviewState(
+                pr_details=pr_details,
+                files=[],  # Not needed for reply mode
+                mode="reply_mode"
+            )
+
+            checkpointer = MemorySaver()
+            checkpoint_id = uuid4()
+
+            config = {
+                "checkpointer": checkpointer,
+                "configurable": {
+                    "thread_id": checkpoint_id
+                }
+            }
+
+            # Run the graph in reply mode
+            final_state = graph.invoke(reply_state, config)
+
+            # Wait before checking again
+            time.sleep(60)  # Check every minute
+
+        except KeyboardInterrupt:
+            log.info("Reply monitoring stopped by user")
+            break
+        except Exception as error:
+            log.exception(f"Error in reply monitoring: {error}")
+            time.sleep(60)  # Wait before retrying
+
+
+def main():
+    """Main function to handle both initial review and reply monitoring."""
+    mode = os.environ.get("MODE", "initial_review")
+
+    if mode == "initial_review":
+        run_initial_review()
+    elif mode == "reply_monitor":
+        run_reply_monitoring()
+    elif mode == "both":
+        # Run initial review first
+        run_initial_review()
+        # Then start monitoring for replies
+        run_reply_monitoring()
+    else:
+        log.error(f"Unknown mode: {mode}")
         sys.exit(1)
 
 
