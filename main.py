@@ -2,6 +2,7 @@
 import sys
 from uuid import uuid4
 
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.errors import GraphRecursionError
 
 from States.state import ReviewState
@@ -54,42 +55,23 @@ def main():
         )
 
         # Run the graph
-        config = {"checkpointer": None}
-        # try:
-        #     final_state = graph.invoke(initial_state, config)
-        # except GraphRecursionError as e:
-        #     log.warning("Recursion error detected, Possible infinite loop / missing stop condition in the graph. Check your graph configuration.")
+        checkpointer = MemorySaver()
+        checkpoint_id = uuid4()
 
-        final_state = None
-        try:
-            final_state = graph.invoke(initial_state, config)
-        except GraphRecursionError:
-            log.warning("Recursion error detected. Check your graph configuration for stop conditions.")
-            sys.exit(1)  # Exit cleanly if the graph failed
+        config = {
+            "checkpointer": checkpointer,
+            "configurable": {
+                "thread_id": checkpoint_id
+            }
+        }
 
-        # Extract final state object
-        if isinstance(final_state, dict):
-            final_state_obj = ReviewState(**final_state)
-        else:
-            final_state_obj = final_state
+        final_state = graph.invoke(initial_state, config)
 
-        comments = final_state_obj.comments
-        log.info(f"Generated {len(comments)} total comments")
-
-        if comments:
-            try:
-                review_id = create_review_comment(pr_details, comments)
-                log.info(f"Successfully posted review with ID: {review_id}")
-            except Exception as e:
-                log.error(f"Failed to post comments: {e}")
-                sys.exit(1)
-        else:
-            log.info("No issues found, no comments to post")
-
-        log.info("\n" + "=" * 100 + " COMPLETED CODE REVIEW " + "=" * 100 + "\n")
+        log.info("\n" + "=" * 100 + " COMPLETED INITIAL CODE REVIEW " + "=" * 100 + "\n")
+        return final_state
 
     except Exception as error:
-        log.exception(f"Error in main: {error}")
+        log.exception(f"Error in initial review: {error}")
         sys.exit(1)
 
 

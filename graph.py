@@ -1,6 +1,7 @@
 # graph.py
 from langgraph.graph import StateGraph, END
 from States.state import ReviewState
+from nodes.git_comment_sender import git_comment_sender
 from nodes.format_comments import format_comments_node
 from nodes.get_next_chunk import get_next_chunk
 from nodes.retrieve_guidelines import retrieve_guidelines
@@ -20,11 +21,13 @@ def create_reviewer_graph():
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
             log.info("All chunks processed, ending review.")
-            return END
+            return "git_comment_sender"
         # elif state.guidelines_store is not None and state.retry_count == 0:
         #     return "retrieve_guidelines"  # ONLY on first attempt
         else:
             return "reviewer_agent"
+
+
 
     def guidelines_transition(state: ReviewState) -> str:
         """Determine next step after guidelines retrieval."""
@@ -62,6 +65,7 @@ def create_reviewer_graph():
     builder.add_node("reviewer_agent", reviewer_agent)
     builder.add_node("feedback_agent", feedback_agent)
     builder.add_node("format_comments", format_comments_node)
+    builder.add_node("git_comment_sender", git_comment_sender)
 
     builder.set_entry_point("get_next_chunk")
 
@@ -70,7 +74,7 @@ def create_reviewer_graph():
         "get_next_chunk",
         get_next_chunk_branch,
         {
-            END: END,
+            "git_comment_sender": "git_comment_sender",
             "retrieve_guidelines": "retrieve_guidelines",
             "reviewer_agent": "reviewer_agent",
         },
@@ -107,6 +111,8 @@ def create_reviewer_graph():
     )
 
     builder.add_edge("format_comments", "get_next_chunk")
+
+    builder.add_edge("git_comment_sender", END)
 
     return builder.compile()
 
