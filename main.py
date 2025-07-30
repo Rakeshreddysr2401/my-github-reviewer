@@ -1,18 +1,15 @@
 # main.py
 import sys
 from uuid import uuid4
-import time
+import os
 
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.errors import GraphRecursionError
-
 from States.state import ReviewState
 from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
 from services.git_services.get_pr_details import PRDetails, get_pr_details
 from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
-import os
 from utils.vectorstore_utils import ensure_vectorstore_exists_and_get
 from graph import graph
 
@@ -20,33 +17,26 @@ log = get_logger()
 
 
 def run_initial_review():
-    """Run the initial code review process."""
     log.info("\n" + "=" * 100 + " STARTED INITIAL CODE REVIEW " + "=" * 100 + "\n")
 
     try:
-        # Initialize guideline store if enabled
+        # Init vectorstore
         guideline_store = None
-        if os.environ.get('USE_VECTORSTORE', 'false').lower() == 'true':
-            log.info("Using vectorstore for coding guidelines")
+        if os.environ.get("USE_VECTORSTORE", "false").lower() == "true":
             guideline_store = ensure_vectorstore_exists_and_get()
 
-        # Get PR details and diff
         pr_details: PRDetails = get_pr_details()
         diff = get_diff(pr_details)
-
         if not diff:
             log.warning("No diff found, nothing to review")
             return
 
-        # Parse and filter diff
         parsed_diff = parse_diff(diff)
         filtered_diff = filter_files_by_exclude_patterns(parsed_diff)
-
         if not filtered_diff:
             log.warning("No files to analyze after filtering")
             return
 
-        # Initialize state for initial review
         initial_state = ReviewState(
             pr_details=pr_details,
             files=filtered_diff,
@@ -55,9 +45,8 @@ def run_initial_review():
             mode="initial_review"
         )
 
-        # Run the graph
         checkpointer = MemorySaver()
-        checkpoint_id = uuid4()
+        checkpoint_id = os.environ.get("THREAD_ID", str(uuid4()))  # Persist ID if passed
 
         config = {
             "checkpointer": checkpointer,
@@ -67,69 +56,59 @@ def run_initial_review():
         }
 
         final_state = graph.invoke(initial_state, config)
-
-        log.info("\n" + "=" * 100 + " COMPLETED INITIAL CODE REVIEW " + "=" * 100 + "\n")
+        log.info("✅ Completed Initial Code Review")
         return final_state
 
-    except Exception as error:
-        log.exception(f"Error in initial review: {error}")
+    except Exception as e:
+        log.exception(f"🚨 Error in initial review: {e}")
         sys.exit(1)
 
 
-def run_reply_monitoring():
-    """Monitor for user replies and respond to them."""
-    log.info("\n" + "=" * 100 + " STARTED REPLY MONITORING " + "=" * 100 + "\n")
+def run_reply_mode():
+    log.info("\n" + "=" * 100 + " STARTED REPLY MODE " + "=" * 100 + "\n")
 
-    pr_details = get_pr_details()
+    try:
+        pr_details = get_pr_details()
 
-    while True:
-        try:
-            # Initialize state for reply mode
-            reply_state = ReviewState(
-                pr_details=pr_details,
-                files=[],  # Not needed for reply mode
-                mode="reply_mode"
-            )
+        reply_comment_id = os.environ.get("REPLY_COMMENT_ID")
+        if not reply_comment_id:
+            raise ValueError("REPLY_COMMENT_ID not provided for reply mode")
 
-            checkpointer = MemorySaver()
-            checkpoint_id = uuid4()
+        checkpoint_id = os.environ.get("THREAD_ID", str(uuid4()))
 
-            config = {
-                "checkpointer": checkpointer,
-                "configurable": {
-                    "thread_id": checkpoint_id
-                }
+        reply_state = ReviewState(
+            pr_details=pr_details,
+            files=[],  # Not required for replies
+            comments=[],
+            mode="reply_mode",
+            reply_comment_id=reply_comment_id
+        )
+
+        config = {
+            "checkpointer": MemorySaver(),
+            "configurable": {
+                "thread_id": checkpoint_id
             }
+        }
 
-            # Run the graph in reply mode
-            final_state = graph.invoke(reply_state, config)
+        final_state = graph.invoke(reply_state, config)
+        log.info("✅ Completed Reply Mode")
+        return final_state
 
-            # Wait before checking again
-            time.sleep(60)  # Check every minute
-
-        except KeyboardInterrupt:
-            log.info("Reply monitoring stopped by user")
-            break
-        except Exception as error:
-            log.exception(f"Error in reply monitoring: {error}")
-            time.sleep(60)  # Wait before retrying
+    except Exception as e:
+        log.exception(f"🚨 Error in reply mode: {e}")
+        sys.exit(1)
 
 
 def main():
-    """Main function to handle both initial review and reply monitoring."""
     mode = os.environ.get("MODE", "initial_review")
 
     if mode == "initial_review":
         run_initial_review()
-    elif mode == "reply_monitor":
-        run_reply_monitoring()
-    elif mode == "both":
-        # Run initial review first
-        run_initial_review()
-        # Then start monitoring for replies
-        run_reply_monitoring()
+    elif mode == "reply_mode":
+        run_reply_mode()
     else:
-        log.error(f"Unknown mode: {mode}")
+        log.error(f"Unknown MODE: {mode}")
         sys.exit(1)
 
 
