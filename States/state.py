@@ -52,7 +52,7 @@ class ReviewState(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     messages: List[BaseMessage] = Field(default_factory=list)
     pr_details: PRDetails
-    files: List[File]
+    files: Optional[List[File]] = []
     current_file_index: int = 0
     current_chunk_index: int = 0
     current_prompt: Optional[str] = None
@@ -65,3 +65,6 @@ class ReviewState(BaseModel):
     final_response: Optional[str] = None
     review_feedback: Optional[ReviewFeedback] = None
     next_agent: Optional[str] = None
+
+    context_prompt: str = ""
+    generated_reply: str = ""

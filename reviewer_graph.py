@@ -1,4 +1,4 @@
-# graph.py
+# reviewer_graph.py
 from langgraph.graph import StateGraph, END
 from States.state import ReviewState
 from nodes.git_comment_sender import git_comment_sender
@@ -16,8 +16,6 @@ MAX_RETRIES = int(os.getenv("MAX_LOOP", "2"))
 
 def create_reviewer_graph():
     """Create and configure the LangGraph state machine for code review."""
-
-
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
             log.info("All chunks processed, ending review.")
@@ -117,8 +115,8 @@ def create_reviewer_graph():
     return builder.compile()
 
 
-graph = create_reviewer_graph()
+review_graph = create_reviewer_graph()
 
 if __name__ == "__main__":
     print("Graph created successfully!")
-    print(graph)
+    print(review_graph)

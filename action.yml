@@ -42,6 +42,10 @@ inputs:
     description: "For Feedback Agent and Reviewer Agent to run in loop"
     required: false
     default: "2"
+  MODE:
+    decription: "mode to review or reply"
+    required: true
+    default: "review"
 
 runs:
   using: "composite"
@@ -61,6 +65,7 @@ runs:
       env:
         OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
         PULL_NUMBER: ${{ inputs.PULL_NUMBER }}
         REPOSITORY: ${{ inputs.REPOSITORY }}
         MODEL: ${{ inputs.MODEL }}
@@ -68,3 +73,4 @@ runs:
         TEMPERATURE: ${{ inputs.TEMPERATURE }}
         USE_VECTORSTORE: ${{ inputs.USE_VECTORSTORE }}
         MAX_LOOP: ${{inputs.MAX_LOOP}}
+        MODE: ${{inputs.MODE}}

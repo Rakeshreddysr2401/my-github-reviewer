@@ -8,18 +8,18 @@ from langgraph.errors import GraphRecursionError
 from States.state import ReviewState
 from utils.github_utils.diff_parser import parse_diff
 from services.git_services.get_diff import get_diff
-from services.git_services.git_review_comment_sender import create_review_comment
 from services.git_services.get_pr_details import PRDetails, get_pr_details
 from utils.file_filters import filter_files_by_exclude_patterns
 from utils.logger import get_logger
 import os
 from utils.vectorstore_utils import ensure_vectorstore_exists_and_get
-from graph import graph
+from reviewer_graph import review_graph
+from reply_graph import reply_graph
 
 log = get_logger()
 
 
-def main():
+def pr_review():
     """Main function to execute the code review process."""
     log.info("\n" + "=" * 100 + " STARTED CODE REVIEW " + "=" * 100 + "\n")
 
@@ -65,7 +65,7 @@ def main():
             }
         }
 
-        final_state = graph.invoke(initial_state, config)
+        final_state = review_graph.invoke(initial_state, config)
 
         log.info("\n" + "=" * 100 + " COMPLETED INITIAL CODE REVIEW " + "=" * 100 + "\n")
         return final_state
@@ -73,7 +73,46 @@ def main():
     except Exception as error:
         log.exception(f"Error in initial review: {error}")
         sys.exit(1)
+def pr_review_reply():
+    """Main function to execute the code review process."""
+    log.info("\n" + "=" * 100 + " STARTED REPLY REVIEW" + "=" * 100 + "\n")
 
+    try:
+        pr_details: PRDetails = get_pr_details()
+        #Here After the initial review, for some chunk ai will reply with a comment
+        #if suppose user not satisfied with the comment, he can reply to the comment
+        #here will take the pr_details and reply to the comment
+        #And for knowledge base, we will use the same vectorstore as used in initial review will do it
+        #But Now I need to reply atleast one comment to the pr, so that I can get the reply from the AI
+
+
+
+        # Initialize state
+        initial_state = ReviewState(
+            pr_details=pr_details,
+        )
+
+        # Run the graph
+        checkpointer = MemorySaver()
+        checkpoint_id = uuid4()
+        config = {
+            "checkpointer": checkpointer,
+            "configurable": {
+                "thread_id": checkpoint_id
+            }
+        }
+
+        final_state = reply_graph.invoke(initial_state, config)
+
+        log.info("\n" + "=" * 100 + " COMPLETED REVIEW REPLY" + "=" * 100 + "\n")
+        return final_state
+
+    except Exception as error:
+        log.exception(f"Error in initial review: {error}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    if os.getenv("MODE")=="review":
+        pr_review_reply()
+    else:
+        pr_review()

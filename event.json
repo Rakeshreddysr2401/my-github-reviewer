@@ -1,0 +1,13 @@
+{
+  "comment": {
+    "id": 123,
+    "body": "Why did you use this function?",
+    "in_reply_to_id": 456
+  },
+  "repository": {
+    "full_name": "Rakeshreddysr2401/my-github-reviewer"
+  },
+  "issue": {
+    "number": 20
+  }
+}
