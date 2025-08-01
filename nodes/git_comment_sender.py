@@ -10,17 +10,17 @@ log = get_logger()
 def git_comment_sender(state: ReviewState) -> ReviewState:
     comments = state.comments
     pr = state.pr_details.pr_obj
-    commit_id = pr.head.sha  # latest commit SHA for the PR
+    commit_sha = pr.head.sha  # latest commit SHA for the PR
 
     if comments:
         comment = comments[0]
         try:
             comment_obj = pr.create_review_comment(
                 body=comment["body"],
-                commit_id=commit_id,
+                commit=commit_sha,  # ✅ FIXED
                 path=comment["path"],
                 line=comment["line"],
-                side="RIGHT"  # or "LEFT" if reviewing base
+                side="RIGHT"
             )
 
             comment_id = comment_obj.id
@@ -28,7 +28,7 @@ def git_comment_sender(state: ReviewState) -> ReviewState:
             log.info(f"Posted single comment to {comment['path']}:{comment['line']}")
             log.info(f"Comment ID: {comment_id}")
 
-            # Save comment ID and other info to memory for future threaded replies
+            # Optionally save memory
             # state.memory[str(comment_id)] = {
             #     "body": comment["body"],
             #     "path": comment["path"],
