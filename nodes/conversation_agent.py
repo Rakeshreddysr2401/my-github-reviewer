@@ -17,7 +17,7 @@ def conversation_agent(state: ReviewState) -> ReviewState:
 
     response = conversation_agent_chain.invoke({
         "original_review": state.original_review,
-        "conversation_history": state.conversation_history,
+        "conversation_history": conversation_history,
         "file_path": state.file_path,
         "line_number": state.line_number,
         "code_context": state.current_diff_hunk ,
