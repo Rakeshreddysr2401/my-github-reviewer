@@ -9,11 +9,11 @@ def get_history(state: ReviewState) -> ReviewState:
     """
     state.history_id = state.pr_details.parent_comment_id
     state.current_id = state.pr_details.comment_id
-    state.current_body = state.pr_details.reply_body
+    state.current_message = state.pr_details.reply_body
     state.current_diff_hunk = state.pr_details.diff_hunk
 
 
-    log.info(f"History ID: {state.history_id}, Current ID: {state.current_id}, Current Body: {state.current_body}, Current Diff Hunk: {state.current_diff_hunk}")
+    log.info(f"History ID: {state.history_id}, Current ID: {state.current_id}, Current Message: {state.current_message}, Current Diff Hunk: {state.current_diff_hunk}")
 
 #     bot_comment = state.pr_details.original_bot_comment or "No original bot comment found."
 #     user_reply = state.pr_details.reply_body or "No user reply found."
