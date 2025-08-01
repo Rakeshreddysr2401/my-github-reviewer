@@ -1,11 +1,11 @@
 import os
 from utils.logger import get_logger
 from main import pr_review, pr_comment_reply
-log=get_logger()
 
+log = get_logger()
 
 def handler():
-    mode=os.environ("MODE").lower()
+    mode = os.environ.get("MODE", "").lower()
     if mode == "review":
         log.info("Starting code review process")
         return pr_review()
@@ -14,3 +14,5 @@ def handler():
         return pr_comment_reply()
     else:
         raise ValueError(f"Unknown mode: {mode}. Expected 'review' or 'reply'.")
+if __name__ == "__main__":
+    handler()
