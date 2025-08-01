@@ -5,60 +5,44 @@ from utils.logger import get_logger
 from typing import List, Dict, Any
 import json
 
-
 log = get_logger()
 
 def git_comment_sender(state: ReviewState) -> ReviewState:
-    """Node to send accumulated comments to GitHub PR."""
     comments = state.comments
-    pr_details: PRDetails = state.pr_details
-
-    log.info(f"Sending {len(comments)} total comments to GitHub PR")
+    pr = state.pr_details.pr_obj
+    commit_id = pr.head.sha  # latest commit SHA for the PR
 
     if comments:
+        comment = comments[0]
         try:
-            # Begin inlined create_review_comment logic
-            formatted_comments: List[Dict[str, Any]] = []
-            for comment in comments:
-                path = comment.get('path')
-                line = comment.get('line')
-                body = comment.get('body')
-                if not path or not line or not body:
-                    log.debug(f"Skipping comment with missing data: path={path}, line={line}")
-                    continue
-                formatted_comment = {
-                    'path': path,
-                    'line': line,
-                    'body': body
-                }
-                log.info(f"Adding comment for {path}:{line}")
-                formatted_comments.append(formatted_comment)
-
-            if not formatted_comments:
-                log.warning("WARNING: No valid comments to post")
-                state.final_response = "No valid comments to post"
-                return state
-
-            log.debug(f"The review comments are : {formatted_comments}")
-
-            pr = pr_details.pr_obj
-            review = pr.create_review(
-                body="Code review by OpenAI",
-                event="COMMENT",
-                comments=formatted_comments
+            comment_obj = pr.create_review_comment(
+                body=comment["body"],
+                commit_id=commit_id,
+                path=comment["path"],
+                line=comment["line"],
+                side="RIGHT"  # or "LEFT" if reviewing base
             )
-            review_id = review.id
-            log.info(f"Successfully created PR review with ID: {review_id}")
-            log.info("Full Review details :\n" + json.dumps(review.raw_data, indent=2))
 
-            # End inlined logic
+            comment_id = comment_obj.id
 
-            state.final_response = f"Successfully posted {len(comments)} comments to PR review {review_id}"
+            log.info(f"Posted single comment to {comment['path']}:{comment['line']}")
+            log.info(f"Comment ID: {comment_id}")
+
+            # Save comment ID and other info to memory for future threaded replies
+            # state.memory[str(comment_id)] = {
+            #     "body": comment["body"],
+            #     "path": comment["path"],
+            #     "line": comment["line"]
+            # }
+
+            state.final_response = f"Posted comment to {comment['path']}:{comment['line']}"
         except Exception as e:
-            log.error(f"Failed to post comments: {e}")
-            state.final_response = f"Failed to post comments: {str(e)}"
+            log.error(f"Failed to post single comment: {e}")
+            state.final_response = f"Failed to post comment: {str(e)}"
     else:
-        log.info("No issues found, no comments to post")
-        state.final_response = "No issues found, no comments to post"
+        log.debug("No comment to post for this chunk")
 
+    # Clear the comments list and move to next chunk
+    state.comments = []
+    state.current_chunk_index += 1
     return state

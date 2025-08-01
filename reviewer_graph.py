@@ -19,7 +19,7 @@ def create_reviewer_graph():
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
             log.info("All chunks processed, ending review.")
-            return "git_comment_sender"
+            return END
         # elif state.guidelines_store is not None and state.retry_count == 0:
         #     return "retrieve_guidelines"  # ONLY on first attempt
         else:
@@ -72,7 +72,7 @@ def create_reviewer_graph():
         "get_next_chunk",
         get_next_chunk_branch,
         {
-            "git_comment_sender": "git_comment_sender",
+            END : END,
             "retrieve_guidelines": "retrieve_guidelines",
             "reviewer_agent": "reviewer_agent",
         },
@@ -108,7 +108,9 @@ def create_reviewer_graph():
         }
     )
 
-    builder.add_edge("format_comments", "get_next_chunk")
+
+    builder.add_edge("format_comments", "git_comment_sender")
+    builder.add_edge("git_comment_sender", "get_next_chunk")
 
     builder.add_edge("git_comment_sender", END)
 

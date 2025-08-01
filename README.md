@@ -63,3 +63,19 @@ feedback_agent_v1
 [if not satisfied] → retrieve_guidelines_v2 (code + review + feedback context)
     ↓
 reviewer_agent_v2 (enhanced with richer guidelines)
+
+
+new flow
+
+
+get_next_chunk
+   ↓
+reviewer_agent
+   ↓
+feedback_agent
+   ↓
+format_comments  → (1 comment)
+   ↓
+git_comment_sender → (submit)
+   ↓
+get_next_chunk
