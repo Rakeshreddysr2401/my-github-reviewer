@@ -71,5 +71,9 @@ class ReviewState(BaseModel):
 
     history_id: int = None
     current_id: int= None
-    current_message: Optional[str] = None
+    line_number: int = 0
+    file_path: Optional[str] = None
+    original_review: Optional[str] = None
+    last_user_message: Optional[str] = None
     current_diff_hunk: Optional[str] = None
+    generated_reply: Optional[str] = None

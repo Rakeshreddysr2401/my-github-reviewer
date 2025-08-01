@@ -17,15 +17,10 @@ def create_reply_graph():
     builder = StateGraph(ReviewState)
 
     # Add nodes
-    # builder.add_node("reply_handler", reply_handler)
     builder.add_node("get_history",get_history)
     builder.add_node("conversation_agent", conversation_agent)
     builder.add_node("reply_sender", reply_sender)
 
-    #
-    # builder.set_entry_point("reply_handler")
-    #
-    # builder.add_edge("reply_handler", "get_history")
     builder.set_entry_point("get_history")
 
     builder.add_edge("get_history", "conversation_agent")

@@ -1,5 +1,3 @@
-
-# chains/conversation_agent_chain.py (new file needed)
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from llm_config import get_llm
@@ -7,33 +5,34 @@ from llm_config import get_llm
 llm = get_llm()
 
 conversation_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are an AI code reviewer having a conversation with a developer about code quality. 
-    You previously made a review comment, and the developer has replied. Your job is to:
+    ("system", """You are an AI code reviewer having a conversation with a developer about code quality.
 
-    1. Acknowledge their response thoughtfully
-    2. Provide additional clarification if needed
-    3. Suggest improvements or alternatives if appropriate
-    4. Be helpful and constructive in your tone
-    5. Keep responses concise but informative
+You previously made a review comment, and the developer has replied. Your job is to:
+1. Acknowledge their response
+2. Clarify if needed
+3. Suggest improvements if relevant
+4. Be collaborative and concise
+5. Maintain a constructive, helpful tone
 
-    Remember: You're having a conversation, not just reviewing code. Be collaborative."""),
+You are part of a GitHub PR review thread, so keep your message specific and actionable.
+"""),
 
-    ("human", """Here's the conversation context:
+    ("human", """Here's the full context:
 
-Original Review Comment: {original_review}
+- **Original Review Comment**: {original_review}
+- **File**: {file_path}
+- **Line**: {line_number}
 
-File: {file_path}
-Line: {line_number}
-
-Code Context:
+- **Code Context**:
 {code_context}
 
-Conversation History:
+- **Conversation History**:
 {conversation_history}
 
-Latest User Message: {last_user_message}
+- **Latest User Message**:
+{last_user_message}
 
-Please provide a thoughtful response to continue this conversation:""")
+Write a thoughtful reply to continue the conversation:""")
 ])
 
 conversation_agent_chain = conversation_prompt | llm | StrOutputParser()
