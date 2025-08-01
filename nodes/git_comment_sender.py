@@ -3,6 +3,8 @@ from States.state import ReviewState
 from services.git_services.get_pr_details import PRDetails
 from utils.logger import get_logger
 from typing import List, Dict, Any
+import json
+
 
 log = get_logger()
 
@@ -47,7 +49,8 @@ def git_comment_sender(state: ReviewState) -> ReviewState:
             )
             review_id = review.id
             log.info(f"Successfully created PR review with ID: {review_id}")
-            log.info(f"Review/Comment Id: {review_id}")
+            log.info("Full Review details :\n" + json.dumps(review.raw_data, indent=2))
+
             # End inlined logic
 
             state.final_response = f"Successfully posted {len(comments)} comments to PR review {review_id}"

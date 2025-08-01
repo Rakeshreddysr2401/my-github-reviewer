@@ -53,7 +53,7 @@ def get_pr_details() -> PRDetails:
         # Load GitHub event payload
         with open(os.environ["GITHUB_EVENT_PATH"], "r") as f:
             event = json.load(f)
-
+        log.info("Full GitHub Event Payload:\n" + json.dumps(event, indent=2))
         comment_id = event["comment"]["id"]
         parent_comment_id = event["comment"].get("in_reply_to_id")
         reply_body = event["comment"]["body"]
