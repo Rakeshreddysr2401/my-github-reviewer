@@ -68,3 +68,8 @@ class ReviewState(BaseModel):
 
     context_prompt: str = ""
     generated_reply: str = ""
+
+    history_id: Optional[str] = None
+    current_id: Optional[str] = None
+    current_body: Optional[str] = None
+    current_diff_hunk: Optional[str] = None

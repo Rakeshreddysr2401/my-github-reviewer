@@ -73,7 +73,7 @@ def pr_review():
     except Exception as error:
         log.exception(f"Error in initial review: {error}")
         sys.exit(1)
-def pr_review_reply():
+def pr_comment_reply():
     """Main function to execute the code review process."""
     log.info("\n" + "=" * 100 + " STARTED REPLY REVIEW" + "=" * 100 + "\n")
 
@@ -110,9 +110,3 @@ def pr_review_reply():
     except Exception as error:
         log.exception(f"Error in initial review: {error}")
         sys.exit(1)
-
-if __name__ == "__main__":
-    if os.getenv("MODE")=="review":
-        pr_review_reply()
-    else:
-        pr_review()
