@@ -47,6 +47,7 @@ def git_comment_sender(state: ReviewState) -> ReviewState:
             )
             review_id = review.id
             log.info(f"Successfully created PR review with ID: {review_id}")
+            log.info(f"Review/Comment Id: {review_id}")
             # End inlined logic
 
             state.final_response = f"Successfully posted {len(comments)} comments to PR review {review_id}"
