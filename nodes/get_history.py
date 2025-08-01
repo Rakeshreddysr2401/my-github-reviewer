@@ -19,7 +19,7 @@ def get_history(state: ReviewState) -> ReviewState:
         f"History ID: {state.history_id}, Current ID: {state.current_id}, Last User Message: {state.last_user_message}, Current Diff Hunk: {state.current_diff_hunk}")
 
     # Assuming Redis-like dictionary for now
-    redis_memory = state.memory_store  # Assume this is a dict for now
+    redis_memory = {} # Assume this is a dict for now
 
     conversation_data = redis_memory.get(str(state.history_id), {})
 
