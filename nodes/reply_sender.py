@@ -22,18 +22,13 @@ def reply_sender(state: ReviewState) -> ReviewState:
         repo_obj = gh.get_repo(f"{owner}/{repo}")
         pr = repo_obj.get_pull(pr_number)
 
-        # Fetch the parent review comment
-        review_comments = pr.get_review_comments()
-        parent_comment = next(
-            (c for c in review_comments if c.id == parent_comment_id), None
+        # Reply to the existing comment thread
+        reply = pr.create_review_comment(
+            body=reply_body,
+            in_reply_to=parent_comment_id
         )
 
-        if parent_comment is None:
-            raise ValueError(f"Parent comment with ID {parent_comment_id} not found.")
-
-        # Post a reply
-        reply_comment = parent_comment.reply(reply_body)
-        log.info(f"Reply posted to comment ID {parent_comment_id} (Reply ID: {reply_comment.id})")
+        log.info(f"Reply posted to comment ID {parent_comment_id} (New Comment ID: {reply.id})")
 
     except Exception as e:
         log.error(f"Failed to send reply comment: {e}")
