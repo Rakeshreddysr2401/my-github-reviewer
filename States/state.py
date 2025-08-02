@@ -34,6 +34,7 @@ class File(BaseModel):
     to_file: Optional[str] = None
     chunks: List[Chunk] = Field(default_factory=list)
 
+
 class ReviewComment(BaseModel):
     lineNumber: int = Field(..., description="Line number of the code to comment on")
     reviewComment: str = Field(..., description="Actual review comment")
@@ -42,10 +43,12 @@ class ReviewComment(BaseModel):
 class ReviewResponse(BaseModel):
     reviews: List[ReviewComment] = Field(default_factory=list, description="List of review comments on the code diff")
 
+
 class ReviewFeedback(BaseModel):
     satisfied: bool = Field(..., description="False if the answer needs to be retried.")
     critique: Optional[str] = Field(default=None, description="Brief critique of the response, if any.")
-    suggestions: Optional[List[str]] = Field(default_factory=list, description="List of specific suggestions for improvement.")
+    suggestions: Optional[List[str]] = Field(default_factory=list,
+                                             description="List of specific suggestions for improvement.")
 
 
 class ReviewState(BaseModel):
@@ -66,14 +69,13 @@ class ReviewState(BaseModel):
     review_feedback: Optional[ReviewFeedback] = None
     next_agent: Optional[str] = None
 
+    # Reply-specific fields
     context_prompt: str = ""
     generated_reply: str = ""
-
-    history_id: int = None
-    current_id: int= None
+    history_id: Optional[int] = None
+    current_id: Optional[int] = None
     line_number: int = 0
     file_path: Optional[str] = None
     original_review: Optional[str] = None
     last_user_message: Optional[str] = None
     current_diff_hunk: Optional[str] = None
-    generated_reply: Optional[str] = None

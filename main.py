@@ -1,4 +1,4 @@
-# main.py (improved)
+# main.py
 import sys
 from uuid import uuid4
 
@@ -28,7 +28,10 @@ def pr_review():
         guideline_store = None
         if os.environ.get('USE_VECTORSTORE', 'false').lower() == 'true':
             log.info("Using vectorstore for coding guidelines")
-            guideline_store = ensure_vectorstore_exists_and_get()
+            try:
+                guideline_store = ensure_vectorstore_exists_and_get()
+            except Exception as e:
+                log.warning(f"Failed to initialize vectorstore: {e}. Continuing without guidelines.")
 
         # Get PR details and diff
         pr_details: PRDetails = get_pr_details()
@@ -40,6 +43,10 @@ def pr_review():
 
         # Parse and filter diff
         parsed_diff = parse_diff(diff)
+        if not parsed_diff:
+            log.warning("Failed to parse diff")
+            return
+
         filtered_diff = filter_files_by_exclude_patterns(parsed_diff)
 
         if not filtered_diff:
@@ -49,7 +56,7 @@ def pr_review():
         # Initialize state
         initial_state = ReviewState(
             pr_details=pr_details,
-            files=filtered_diff,  # Use filtered diff
+            files=filtered_diff,
             comments=[],
             guidelines_store=guideline_store
         )
@@ -59,13 +66,19 @@ def pr_review():
         checkpoint_id = uuid4()
 
         config = {
-            "checkpointer": checkpointer,
             "configurable": {
-                "thread_id": checkpoint_id
+                "thread_id": str(checkpoint_id)
             }
         }
 
-        final_state = review_graph.invoke(initial_state, config)
+        try:
+            final_state = review_graph.invoke(initial_state, config)
+        except GraphRecursionError as e:
+            log.error(f"Graph recursion error: {e}")
+            return
+        except Exception as e:
+            log.error(f"Error running review graph: {e}")
+            raise
 
         log.info("\n" + "=" * 100 + " COMPLETED INITIAL CODE REVIEW " + "=" * 100 + "\n")
         return final_state
@@ -73,19 +86,18 @@ def pr_review():
     except Exception as error:
         log.exception(f"Error in initial review: {error}")
         sys.exit(1)
+
+
 def pr_comment_reply():
-    """Main function to execute the code review process."""
+    """Main function to execute the comment reply process."""
     log.info("\n" + "=" * 100 + " STARTED REPLY REVIEW" + "=" * 100 + "\n")
 
     try:
         pr_details: PRDetails = get_pr_details()
-        #Here After the initial review, for some chunk ai will reply with a comment
-        #if suppose user not satisfied with the comment, he can reply to the comment
-        #here will take the pr_details and reply to the comment
-        #And for knowledge base, we will use the same vectorstore as used in initial review will do it
-        #But Now I need to reply atleast one comment to the pr, so that I can get the reply from the AI
 
-
+        if not pr_details.comment_id:
+            log.error("No comment ID found for reply mode")
+            return
 
         # Initialize state
         initial_state = ReviewState(
@@ -96,17 +108,20 @@ def pr_comment_reply():
         checkpointer = MemorySaver()
         checkpoint_id = uuid4()
         config = {
-            "checkpointer": checkpointer,
             "configurable": {
-                "thread_id": checkpoint_id
+                "thread_id": str(checkpoint_id)
             }
         }
 
-        final_state = reply_graph.invoke(initial_state, config)
+        try:
+            final_state = reply_graph.invoke(initial_state, config)
+        except Exception as e:
+            log.error(f"Error running reply graph: {e}")
+            raise
 
         log.info("\n" + "=" * 100 + " COMPLETED REVIEW REPLY" + "=" * 100 + "\n")
         return final_state
 
     except Exception as error:
-        log.exception(f"Error in initial review: {error}")
+        log.exception(f"Error in reply process: {error}")
         sys.exit(1)
