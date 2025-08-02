@@ -1,7 +1,6 @@
-# nodes/reply_sender.py
 from States.state import ReviewState
 from utils.logger import get_logger
-import json
+
 log = get_logger()
 
 
@@ -9,8 +8,7 @@ def reply_sender(state: ReviewState) -> ReviewState:
     """Send reply to GitHub comment thread with proper error handling."""
     log.info("🔄 Reply Sender Node called")
     log.info(f"Reply content: {state.generated_reply}")
-    log.info("Replying to comment ID: %s", state.pr_details.comment_id) #in reply id
-
+    log.info("Replying to comment ID: %s", state.pr_details.comment_id)  # in reply id
 
     if not state.generated_reply:
         log.warning("No reply generated to send")
@@ -28,19 +26,16 @@ def reply_sender(state: ReviewState) -> ReviewState:
 
         # Find the original comment to reply to
         review_comments = list(pr.get_review_comments())
-        original_comment = None
-
-        for comment in review_comments:
-            if comment.id == comment_id:
-                original_comment = comment
-                break
+        original_comment = next((c for c in review_comments if c.id == comment_id), None)
 
         if not original_comment:
             log.error(f"Original comment with ID {comment_id} not found")
             state.final_response = "Original comment not found"
             return state
 
-        log.info("Original comment found:\n" + json.dumps(original_comment, indent=2))
+        log.info(f"Original comment info - id: {original_comment.id}, path: {original_comment.path}, "
+                 f"line: {original_comment.line}, body: {original_comment.body[:100]}...")
+
         # Create reply comment
         reply_comment = pr.create_review_comment(
             body=state.generated_reply,
