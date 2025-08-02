@@ -71,6 +71,7 @@ def get_pr_details() -> PRDetails:
             diff_hunk = comment_data.get("diff_hunk")
 
             if parent_comment_id:
+                log.info(f"Parent comment ID: {parent_comment_id}")
                 # Try to find parent comment in review comments
                 review_comments = list(pr.get_review_comments())
                 original = next((c for c in review_comments if c.id == parent_comment_id), None)
@@ -78,8 +79,13 @@ def get_pr_details() -> PRDetails:
                 if not original:
                     issue_comments = list(pr.get_issue_comments())
                     original = next((c for c in issue_comments if c.id == parent_comment_id), None)
+                    if original:
+                        log.info(f"Found original comment in issue comments :" + json.dumps(original, indent=2))
+                    else:
+                        log.error(f"Not Found original comments ")
 
                 if original:
+                    log.info(f"Found original comment in review comments :"+json.dumps(original, indent=2))
                     original_bot_comment = original.body
                 else:
                     log.warning(f"Parent comment with ID {parent_comment_id} not found in review or issue comments.")
