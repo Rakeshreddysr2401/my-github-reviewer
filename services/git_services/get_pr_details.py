@@ -1,4 +1,3 @@
-# services/git_services/get_pr_details.py
 import os
 import json
 from services.git_services.github_client import gh
@@ -9,18 +8,18 @@ log = get_logger()
 
 class PRDetails:
     def __init__(
-            self,
-            owner: str,
-            repo: str,
-            pull_number: int,
-            title: str,
-            description: str,
-            pr_obj=None,
-            comment_id: int = None,
-            parent_comment_id: int = None,
-            reply_body: str = None,
-            original_bot_comment: str = None,
-            diff_hunk: str = None
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+        title: str,
+        description: str,
+        pr_obj=None,
+        comment_id: int = None,
+        parent_comment_id: int = None,
+        reply_body: str = None,
+        original_bot_comment: str = None,
+        diff_hunk: str = None
     ):
         self.owner = owner
         self.repo = repo
@@ -80,12 +79,12 @@ def get_pr_details() -> PRDetails:
                     issue_comments = list(pr.get_issue_comments())
                     original = next((c for c in issue_comments if c.id == parent_comment_id), None)
                     if original:
-                        log.info(f"Found original comment in issue comments :" + json.dumps(original, indent=2))
+                        log.info(f"Found original comment in issue comments: ID={original.id}, User={original.user.login}")
                     else:
-                        log.error(f"Not Found original comments ")
+                        log.error(f"Original parent comment not found in review or issue comments.")
 
                 if original:
-                    log.info(f"Found original comment in review comments :"+json.dumps(original, indent=2))
+                    log.info(f"Found original comment in review comments: ID={original.id}, User={original.user.login}")
                     original_bot_comment = original.body
                 else:
                     log.warning(f"Parent comment with ID {parent_comment_id} not found in review or issue comments.")
