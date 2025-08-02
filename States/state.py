@@ -71,7 +71,7 @@ class ReviewState(BaseModel):
 
     # Core workflow state
     messages: List[BaseMessage] = Field(default_factory=list)
-    pr_details: PRDetails
+    pr_details: Optional[PRDetails] = None
     files: Optional[List[File]] = []
     current_file_index: int = 0
     current_chunk_index: int = 0

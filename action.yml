@@ -46,6 +46,14 @@ inputs:
     decription: "mode to review or reply"
     required: true
     default: "review"
+  REDIS_PASSWORD:
+    description: "Password for Redis if using vector store"
+    required: true
+    default: ""
+  REDIS_HOST:
+    description: "Host for Redis if using vector store"
+    required: true
+    default: "localhost"
 
 runs:
   using: "composite"
@@ -74,3 +82,5 @@ runs:
         USE_VECTORSTORE: ${{ inputs.USE_VECTORSTORE }}
         MAX_LOOP: ${{inputs.MAX_LOOP}}
         MODE: ${{inputs.MODE}}
+        REDIS_PASSWORD: ${{ inputs.REDIS_PASSWORD }}
+        REDIS_HOST: ${{ inputs.REDIS_HOST }}
