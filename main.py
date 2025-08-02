@@ -75,7 +75,10 @@ def pr_review():
         }
 
         log.info("🚀 Starting review workflow")
-        final_state = review_graph.invoke(initial_state, config)
+        result = review_graph.invoke(initial_state, config)
+
+        # ✅ Ensure result is a proper ReviewState object
+        final_state = ReviewState(**result)
 
         log.info("\n" + "=" * 100 + " ✅ COMPLETED CODE REVIEW " + "=" * 100 + "\n")
         return {
@@ -91,7 +94,6 @@ def pr_review():
     except Exception as error:
         log.exception(f"❌ Critical error in code review: {error}")
         return {"status": "error", "message": f"Review failed: {str(error)}"}
-
 
 def pr_comment_reply():
     """Enhanced reply function with comprehensive error handling."""
@@ -121,7 +123,10 @@ def pr_comment_reply():
         }
 
         log.info("🚀 Starting reply workflow")
-        final_state = reply_graph.invoke(initial_state, config)
+        result = reply_graph.invoke(initial_state, config)
+
+        # ✅ Ensure result is a proper ReviewState object
+        final_state = ReviewState(**result)
 
         log.info("\n" + "=" * 100 + " ✅ COMPLETED REVIEW REPLY" + "=" * 100 + "\n")
         return {
@@ -133,4 +138,3 @@ def pr_comment_reply():
     except Exception as error:
         log.exception(f"❌ Critical error in reply process: {error}")
         return {"status": "error", "message": f"Reply failed: {str(error)}"}
-
