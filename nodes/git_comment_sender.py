@@ -51,7 +51,7 @@ def git_comment_sender(state: ReviewState) -> ReviewState:
             messages=state.messages,
             last_comment= comment["body"],
             file_path=comment["path"],
-            line_number=comment["line"],
+            line_number=int(comment["line"]),
             timestamp = comment_obj.created_at.isoformat() if hasattr(comment_obj, 'created_at') else None
         )
         redis_map.save(comment_id, savingState)
