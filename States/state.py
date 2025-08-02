@@ -101,3 +101,12 @@ class ReviewState(BaseModel):
     error_message: Optional[str] = None
     error_count: int = 0
     max_errors: int = 3
+
+class RedisStorageState (BaseModel):
+    comment_id: str = Field(..., description="Unique identifier for the review state")
+    messages: List[BaseMessage] = Field(default_factory=list)
+    last_comment: Optional[str] = None
+    line_number: Optional[int] = None
+    file_path: Optional[str] = None
+    timestamp: Optional[str] = None
+

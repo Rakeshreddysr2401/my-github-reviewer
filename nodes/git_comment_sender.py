@@ -1,8 +1,9 @@
 # nodes/git_comment_sender.py
-from States.state import ReviewState
+from States.state import ReviewState, RedisStorageState
 from services.git_services.get_pr_details import PRDetails
 from utils.logger import get_logger
 from typing import List, Dict, Any
+from configs.redis_memory_manager import redis_map
 import json
 
 log = get_logger()
@@ -45,15 +46,15 @@ def git_comment_sender(state: ReviewState) -> ReviewState:
         log.info(f"✅ Posted comment ID {comment_id} to {comment['path']}:{comment['line']}")
 
         # Store in memory for future reference (if needed)
-        memory_data = {
-            "comments": comment["body"],
-            "file_path": comment["path"],
-            "line_number": comment["line"],
-            "timestamp": comment_obj.created_at.isoformat() if hasattr(comment_obj, 'created_at') else None
-        }
-
-        # TODO: Implement proper memory storage
-        # redis_memory[str(comment_id)] = memory_data
+        savingState = RedisStorageState(
+            comment_id=comment_id,
+            messages=state.messages,
+            last_comment= comment["body"],
+            file_path=comment["path"],
+            line_number=comment["line"],
+            timestamp = comment_obj.created_at.isoformat() if hasattr(comment_obj, 'created_at') else None
+        )
+        redis_map.save(comment_id, savingState)
 
         state.final_response = f"Successfully posted comment to {comment['path']}:{comment['line']}"
 

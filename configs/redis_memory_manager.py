@@ -3,7 +3,7 @@ import os
 import redis
 from typing import Optional
 from langchain_core.messages import HumanMessage
-from States.state import ReviewState
+from States.state import RedisStorageState
 
 
 class ReviewStateManager:
@@ -16,35 +16,35 @@ class ReviewStateManager:
             password=os.getenv("REDIS_PASSWORD"),
         )
 
-    def save(self, comment_id: str, state: ReviewState, hours: int = 24):
+    def save(self, comment_id: str, state: RedisStorageState, hours: int = 24):
         """Save ReviewState to Redis"""
         key = f"review_state:{comment_id}"
         self.redis.setex(key, hours * 3600, state.model_dump_json())
         print(f"✅ Saved review state for {comment_id}")
 
-    def get(self, comment_id: str) -> Optional[ReviewState]:
-        """Get ReviewState from Redis"""
+    def get(self, comment_id: str) -> Optional[RedisStorageState]:
+        """Get RedisStorageState from Redis"""
         key = f"review_state:{comment_id}"
         data = self.redis.get(key)
         if data:
             print(f"✅ Retrieved review state for {comment_id}")
-            return ReviewState.model_validate_json(data)
+            return RedisStorageState.model_validate_json(data)
         else:
             print(f"❌ No review state found for {comment_id}")
             return None
 
-    def update(self, comment_id: str, state: ReviewState, hours: int = 24):
-        """Update existing ReviewState (same as save)"""
+    def update(self, comment_id: str, state: RedisStorageState, hours: int = 24):
+        """Update existing RedisStorageState (same as save)"""
         return self.save(comment_id, state, hours)
 
     def delete(self, comment_id: str):
-        """Delete ReviewState from Redis"""
+        """Delete RedisStorageState from Redis"""
         key = f"review_state:{comment_id}"
         result = self.redis.delete(key)
         print(f"✅ Deleted review state for {comment_id}" if result else f"❌ Nothing to delete for {comment_id}")
 
     def exists(self, comment_id: str) -> bool:
-        """Check if ReviewState exists"""
+        """Check if RedisStorageState exists"""
         key = f"review_state:{comment_id}"
         return bool(self.redis.exists(key))
 
@@ -65,20 +65,19 @@ if __name__ == "__main__":
 
     #
     #
-    # # Example with your ReviewState
-    # review_state = ReviewState(
+    # # Example with your RedisStorageState
+    # review_state = RedisStorageState(
     #     current_file_index=0,
     #     current_chunk_index=0,
     #     comments=[],
     #     messages=[HumanMessage(content="This is a test message")],
     # )
     #
-    # # Save review state
+    # # Save RedisStorage state
     # state_manager.save("comment_123", review_state, hours=48)
     #
     # # Get review state for reply
     retrieved_state = state_manager.get("comment_123")
     if retrieved_state:
-
         print(f"Messages count: {len(retrieved_state.messages)}")
         print("First message content:", retrieved_state.messages[0].content if retrieved_state.messages else "No messages")

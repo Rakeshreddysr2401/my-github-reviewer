@@ -36,6 +36,7 @@ def format_comments_node(state: ReviewState) -> ReviewState:
             }
 
             state.comments = [comment]  # Only the current one to send
+            #todo leaving other changes in that chunk need to fix this
             return state  # 🚨 Return early after one comment
 
         except Exception as e:
