@@ -77,7 +77,7 @@ if __name__ == "__main__":
     # state_manager.save("comment_123", review_state, hours=48)
     #
     # # Get review state for reply
-    retrieved_state = state_manager.get("comment_123")
+    retrieved_state = state_manager.get(2249296947)
     if retrieved_state:
         print(f"Messages count: {len(retrieved_state.messages)}")
         print("First message content:", retrieved_state.messages[0].content if retrieved_state.messages else "No messages")

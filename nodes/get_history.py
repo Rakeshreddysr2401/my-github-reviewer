@@ -16,10 +16,10 @@ def get_history(state: ReviewState) -> ReviewState:
         f"History ID: {state.history_id}, Current ID: {state.current_id}, Last User Message: {state.last_user_message}, Current Diff Hunk: {state.current_diff_hunk}"
     )
 
-    history = redis_map.get(str(state.pr_details.comment_id))  # Convert to str as Redis keys are usually strings
+    history = redis_map.get(str(state.pr_details.parent_comment_id))  # Convert to str as Redis keys are usually strings
 
     if history is None:
-        log.warning(f"No Redis history found for comment_id={state.pr_details.comment_id}")
+        log.warning(f"No Redis history found for parent_comment_id={state.pr_details.parent_comment_id}")
         state.error_message = "❌ Redis: No stored history found for this comment ID"
         return state  # Or raise a controlled exception / trigger retry if you want
 
