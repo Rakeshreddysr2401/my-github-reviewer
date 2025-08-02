@@ -1,7 +1,7 @@
 # nodes/get_history.py
-from States.state import ReviewState
+from States.state import ReviewState, RedisStorageState
 from utils.logger import get_logger
-
+from configs.redis_memory_manager import redis_map
 log = get_logger()
 
 
@@ -18,16 +18,16 @@ def get_history(state: ReviewState) -> ReviewState:
     log.info(
         f"History ID: {state.history_id}, Current ID: {state.current_id}, Last User Message: {state.last_user_message}, Current Diff Hunk: {state.current_diff_hunk}")
 
-    # Assuming Redis-like dictionary for now
-    redis_memory = {} # Assume this is a dict for now
 
-    conversation_data = redis_memory.get(str(state.history_id), {})
+    history = redis_map.get(state.pr_details.comment_id)
+    conversation_data = state.model_dump()
+    log.info(f"Previous Comment History: {conversation_data} " )
 
     #todo will add this in messages list
-    state.original_review = conversation_data.get("comments", "Original comment not found.")
-    # state.conversation_history = conversation_data.get("messages", "No conversation history yet.")
-    state.file_path = conversation_data.get("file_path", "unknown.py")
-    state.line_number = conversation_data.get("line_number", 0)
+    state.original_review = history.last_comment #if not original comment not found
+    state.conversation_history = history.messages
+    state.file_path = history.file_path
+    state.line_number = history.line_number
 
     log.info(f"Loaded history for ID {state.history_id}")
     return state
