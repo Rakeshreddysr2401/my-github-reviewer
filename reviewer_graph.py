@@ -16,6 +16,7 @@ MAX_RETRIES = int(os.getenv("MAX_LOOP", "2"))
 
 def create_reviewer_graph():
     """Create and configure the LangGraph state machine for code review."""
+
     def get_next_chunk_branch(state: ReviewState) -> str:
         if state.done:
             log.info("All chunks processed, ending review.")
@@ -24,8 +25,6 @@ def create_reviewer_graph():
         #     return "retrieve_guidelines"  # ONLY on first attempt
         else:
             return "reviewer_agent"
-
-
 
     def guidelines_transition(state: ReviewState) -> str:
         """Determine next step after guidelines retrieval."""
@@ -72,7 +71,7 @@ def create_reviewer_graph():
         "get_next_chunk",
         get_next_chunk_branch,
         {
-            END : END,
+            END: END,
             "retrieve_guidelines": "retrieve_guidelines",
             "reviewer_agent": "reviewer_agent",
         },
@@ -108,11 +107,8 @@ def create_reviewer_graph():
         }
     )
 
-
     builder.add_edge("format_comments", "git_comment_sender")
     builder.add_edge("git_comment_sender", "get_next_chunk")
-
-    builder.add_edge("git_comment_sender", END)
 
     return builder.compile()
 

@@ -36,23 +36,40 @@ class File(BaseModel):
 
 
 class ReviewComment(BaseModel):
-    lineNumber: int = Field(..., description="Line number of the code to comment on")
-    reviewComment: str = Field(..., description="Actual review comment")
+    """Structured review comment with validation."""
+    lineNumber: int = Field(..., description="Line number of the code to comment on", gt=0)
+    reviewComment: str = Field(..., description="Actual review comment", min_length=10, max_length=500)
 
 
 class ReviewResponse(BaseModel):
-    reviews: List[ReviewComment] = Field(default_factory=list, description="List of review comments on the code diff")
+    """Collection of review comments with validation."""
+    reviews: List[ReviewComment] = Field(
+        default_factory=list,
+        description="List of review comments on the code diff",
+        max_items=5  # Limit to prevent spam
+    )
 
 
 class ReviewFeedback(BaseModel):
+    """Feedback on review quality with detailed critique."""
     satisfied: bool = Field(..., description="False if the answer needs to be retried.")
-    critique: Optional[str] = Field(default=None, description="Brief critique of the response, if any.")
-    suggestions: Optional[List[str]] = Field(default_factory=list,
-                                             description="List of specific suggestions for improvement.")
+    critique: Optional[str] = Field(
+        default=None,
+        description="Brief critique of the response, if any.",
+        max_length=200
+    )
+    suggestions: Optional[List[str]] = Field(
+        default_factory=list,
+        description="List of specific suggestions for improvement.",
+        max_items=3
+    )
 
 
 class ReviewState(BaseModel):
+    """Enhanced state management for code review workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    # Core workflow state
     messages: List[BaseMessage] = Field(default_factory=list)
     pr_details: PRDetails
     files: Optional[List[File]] = []
@@ -69,7 +86,7 @@ class ReviewState(BaseModel):
     review_feedback: Optional[ReviewFeedback] = None
     next_agent: Optional[str] = None
 
-    # Reply-specific fields
+    # Reply workflow state
     context_prompt: str = ""
     generated_reply: str = ""
     history_id: Optional[int] = None
@@ -79,3 +96,8 @@ class ReviewState(BaseModel):
     original_review: Optional[str] = None
     last_user_message: Optional[str] = None
     current_diff_hunk: Optional[str] = None
+
+    # Error handling
+    error_message: Optional[str] = None
+    error_count: int = 0
+    max_errors: int = 3

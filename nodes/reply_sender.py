@@ -1,36 +1,55 @@
+# nodes/reply_sender.py
 from States.state import ReviewState
-from services.git_services.github_client import gh
 from utils.logger import get_logger
 
 log = get_logger()
 
+
 def reply_sender(state: ReviewState) -> ReviewState:
-    """
-    Posts a threaded reply to an existing GitHub review comment.
-    """
-    log.info("Preparing to send threaded reply...")
-    log.info("Reply body: %s", state.generated_reply)
+    """Send reply to GitHub comment thread with proper error handling."""
+    if not state.generated_reply:
+        log.warning("No reply generated to send")
+        state.final_response = "No reply to send"
+        return state
 
     try:
-        owner = state.pr_details.owner
-        repo = state.pr_details.repo
-        pr_number = state.pr_details.pull_number
-        parent_comment_id = state.pr_details.parent_comment_id
-        reply_body = state.generated_reply
+        pr = state.pr_details.pr_obj
+        comment_id = state.pr_details.comment_id
 
-        # Get PullRequest object
-        repo_obj = gh.get_repo(f"{owner}/{repo}")
-        pr = repo_obj.get_pull(pr_number)
+        if not comment_id:
+            log.error("No comment ID available for reply")
+            state.final_response = "No comment ID for reply"
+            return state
 
-        # Reply to the existing comment thread
-        reply = pr.create_review_comment(
-            body=reply_body,
-            in_reply_to=parent_comment_id
+        # Find the original comment to reply to
+        review_comments = list(pr.get_review_comments())
+        original_comment = None
+
+        for comment in review_comments:
+            if comment.id == comment_id:
+                original_comment = comment
+                break
+
+        if not original_comment:
+            log.error(f"Original comment with ID {comment_id} not found")
+            state.final_response = "Original comment not found"
+            return state
+
+        # Create reply comment
+        reply_comment = pr.create_review_comment(
+            body=state.generated_reply,
+            commit=pr.head.sha,
+            path=original_comment.path,
+            line=original_comment.line,
+            side="RIGHT",
+            in_reply_to=comment_id
         )
 
-        log.info(f"Reply posted to comment ID {parent_comment_id} (New Comment ID: {reply.id})")
+        log.info(f"✅ Posted reply ID {reply_comment.id} to comment {comment_id}")
+        state.final_response = f"Successfully posted reply to comment {comment_id}"
 
     except Exception as e:
-        log.error(f"Failed to send reply comment: {e}")
+        log.error(f"❌ Failed to post reply: {e}")
+        state.final_response = f"Failed to post reply: {str(e)}"
 
     return state
