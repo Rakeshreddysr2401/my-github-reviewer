@@ -12,6 +12,8 @@ def get_history(state: ReviewState) -> ReviewState:
     state.last_user_message = state.pr_details.reply_body
     state.current_diff_hunk = state.pr_details.diff_hunk
 
+    super_parent_id= state.pr_details.super_parent_id
+
     log.info(
         f"History ID: {state.history_id}, Current ID: {state.current_id}, Last User Message: {state.last_user_message}, Current Diff Hunk: {state.current_diff_hunk}"
     )
@@ -30,5 +32,6 @@ def get_history(state: ReviewState) -> ReviewState:
 
     log.info(f"History of Previous Messages: {state.messages}")
     log.info(f"✅ Loaded history for ID {state.history_id}")
+    log.info(f"Super Parent ID : {super_parent_id}")
     return state
 
