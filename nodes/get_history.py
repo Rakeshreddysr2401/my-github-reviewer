@@ -28,6 +28,7 @@ def get_history(state: ReviewState) -> ReviewState:
     state.file_path = history.file_path
     state.line_number = history.line_number
 
+    log.info(f"History of Previous Messages: {state.messages}")
     log.info(f"✅ Loaded history for ID {state.history_id}")
     return state
 

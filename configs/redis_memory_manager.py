@@ -78,6 +78,8 @@ if __name__ == "__main__":
     #
     # # Get review state for reply
     retrieved_state = state_manager.get(2249296947)
+    print(f"Retrieved State: {retrieved_state}")
     if retrieved_state:
         print(f"Messages count: {len(retrieved_state.messages)}")
-        print("First message content:", retrieved_state.messages[0].content if retrieved_state.messages else "No messages")
+        for msg in retrieved_state.messages:
+            print(msg)
