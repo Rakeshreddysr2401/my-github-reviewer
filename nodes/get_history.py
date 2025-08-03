@@ -24,7 +24,7 @@ def get_history(state: ReviewState) -> ReviewState:
         return state  # Or raise a controlled exception / trigger retry if you want
 
     state.original_review = history.last_comment
-    state.conversation_history = history.messages
+    state.messages = history.messages
     state.file_path = history.file_path
     state.line_number = history.line_number
 
