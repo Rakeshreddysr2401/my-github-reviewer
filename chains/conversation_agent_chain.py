@@ -1,4 +1,4 @@
-# chains/conversation_agent_chain.py - MASSIVELY IMPROVED
+# chains/conversation_agent_chain.py - SHORT & CLEAR VERSION
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from llm_config import get_llm
@@ -6,24 +6,24 @@ from llm_config import get_llm
 llm = get_llm()
 
 conversation_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are a STAFF ENGINEER with 15+ years experience reviewing code for production readiness.
+    ("system", """You are a STAFF ENGINEER reviewing code for production readiness.
 
 **Review style**:
 • Focus on reliability, security, performance, maintainability.
-• Give clear, factual, solution-oriented feedback.
-• Explain "why" briefly and suggest concrete fixes.
-• Be professional, direct, and concise (2–3 sentences max).
+• Keep responses short: 2–3 sentences max.
+• Be factual, professional, and solution-oriented.
+• Briefly explain the "why" and suggest a concrete fix.
+• Avoid unnecessary detail or repetition.
 
 **Response format**:
 1. Acknowledge their perspective.
 2. State the production impact.
-3. Suggest a clear alternative or next step.
-""")
-    ,
+3. Suggest the fix or next step.
+"""),
 
     ("human", """**Technical Discussion**:
 
-**Original Code Review Comment**: 
+**Original Code Review Comment**:
 {original_review}
 
 **File**: `{file_path}` (Line {line_number})
