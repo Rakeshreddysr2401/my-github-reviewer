@@ -33,7 +33,7 @@ inputs:
   TEMPERATURE:
     description: "Temperature for the model (0.0 for deterministic, 1.0 for creative)"
     required: false
-    default: "0.5"
+    default: "0.3"
   USE_VECTORSTORE:
     description: "Use vector store for specific guidelines"
     required: false
