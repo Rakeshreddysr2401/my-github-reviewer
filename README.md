@@ -70,4 +70,7 @@ TEMPERATURE="0.7"
 ---
 # Finally Looks Like below :
 
+<img width="2880" height="1800" alt="image" src="https://github.com/user-attachments/assets/e9c1f4b5-32ce-42e9-a82c-6e166b1c008d" />
+
+
 <img width="1440" height="900" alt="Screenshot 2025-07-23 at 8 59 12 PM" src="https://github.com/user-attachments/assets/f76887e3-463e-43bd-9146-2f602c2ead02" />
