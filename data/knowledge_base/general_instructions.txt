@@ -1,0 +1,44 @@
+// [topic=general_coding]
+
+// ✅ Code Quality
+- Write small, single-responsibility functions/methods.
+- Name variables, functions, and classes clearly and consistently.
+- Avoid magic numbers or strings — use constants or enums.
+- Prefer immutability — avoid modifying shared state.
+
+// ✅ Readability & Maintainability
+- Follow consistent code formatting and naming conventions.
+- Add meaningful comments for complex logic, not obvious code.
+- Use docstrings or documentation annotations for public functions/APIs.
+- Break large files or classes into smaller modules when needed.
+
+// ✅ Error Handling
+- Handle exceptions gracefully with clear error messages.
+- Never silently catch exceptions — log or propagate them appropriately.
+- Validate inputs at all boundaries (APIs, functions, user inputs).
+
+// ✅ Testing
+- Write unit tests for core logic and edge cases.
+- Use mocks or fakes to isolate external dependencies (e.g., DB, APIs).
+- Prefer test coverage on business logic over boilerplate.
+
+// ✅ Git & Collaboration
+- Commit small, focused changes with clear messages.
+- Use feature branches and pull requests — avoid direct `main` commits.
+- Review code for correctness, readability, and security — not just functionality.
+
+// ✅ Performance & Scalability
+- Avoid premature optimization — profile before tuning.
+- Use efficient data structures and algorithms.
+- Be mindful of I/O, network, and DB performance.
+
+// ✅ Security
+- Never hardcode secrets, passwords, or tokens — use env vars or secret managers.
+- Sanitize and validate all external inputs (APIs, DB, forms).
+- Use secure defaults and libraries with known reputations.
+
+// ✅ Clean Architecture
+- Separate concerns: keep controllers, services, repositories distinct.
+- Avoid business logic in routing/controllers/UI.
+- Make your code modular and testable by design.
+

@@ -1,0 +1,65 @@
+// [topic=python]
+- Avoid mutable default arguments (`[]`, `{}`); use `None` + check instead.
+- Use `Optional[...]` and `Union` in type hints instead of returning `None` silently.
+- Always use context managers (`with open(...)`) to manage files or streams.
+- Use early returns (guard clauses) to avoid deep nesting.
+
+// [topic=fastapi]
+- Prefer constructor-based dependency injection with `Depends()` for services and clients.
+- Use `pydantic.BaseSettings` or `Config.env_file` for environment configuration.
+- Return `Response`, `JSONResponse`, or `ResponseModel` with proper status codes.
+- Keep business logic in service or domain layers — not in route handlers.
+
+// [topic=pydantic]
+- Match DTO field names with the data source (ORM, API) to reduce custom mappings.
+- Use `@validator`, `root_validator`, and `field(default_factory=...)` for complex logic.
+- Enable `Config.orm_mode = True` if mapping from ORM models.
+- Avoid huge nested models for performance-critical paths — split or flatten when possible.
+
+// [topic=sqlalchemy]
+- Use `lazy='select'` (default) for relationships unless eager loading is needed.
+- Paginate large queries using `.limit().offset()` to avoid memory pressure.
+- Never return raw entity models from APIs — always use DTOs (Pydantic models).
+- Wrap data-layer methods with context managers or services that use `@contextmanager`.
+
+// [topic=kafka / aiokafka]
+- Configure DLQ (Dead Letter Queue) logic using retries + error sinks.
+- Gracefully handle deserialization errors via `try/except` at message entry.
+- Offload processing to `asyncio.create_task` or background workers — don’t block Kafka threads.
+- Build idempotent message handlers using unique keys or event deduplication logic.
+
+// [topic=httpx / aiohttp / requests]
+- Always set connection and read timeouts (`httpx.Timeout(...)`).
+- Avoid using `.run_until_complete()` or `.result()` in an async context.
+- Use retry libraries (`tenacity`, `backoff`) for network requests.
+- Catch and handle `httpx.HTTPStatusError` and `RequestError` exceptions specifically.
+
+// [topic=langchain]
+- Use LCEL (LangChain Expression Language) for clearer and more maintainable chains.
+- Split complex chains into composable, testable subchains.
+- Use callbacks or tracing (like LangSmith) to debug chain behavior.
+- Avoid passing unvalidated user input directly into LLM prompts.
+
+// [topic=langgraph]
+- Define states and events using Enums for clarity and safety.
+- Keep your state machine transitions minimal and maintainable.
+- Use node functions to encapsulate tool-specific logic.
+- Use logging and callbacks for tracing state transitions and debugging.
+
+// [topic=llms / prompts]
+- Define reusable prompt templates using `PromptTemplate` or `ChatPromptTemplate`.
+- Use `PydanticOutputParser` or similar to structure LLM outputs.
+- Avoid overly long prompts — summarize or break context as needed.
+- Always validate and sanitize LLM inputs and outputs before use in downstream tasks.
+
+// [topic=testing]
+- Use `pytest` and `pytest-asyncio` for testing async code.
+- Use `responses` or `respx` to mock HTTP calls; `unittest.mock` for local dependencies.
+- Write integration tests for chains, agents, and state transitions.
+- Assert LLM outputs against structure and content expectations using Pydantic models.
+
+// [topic=performance / architecture]
+- Use async I/O wherever possible — especially in FastAPI, HTTP, and Kafka consumers.
+- Profile large chains with LangSmith or tracing before optimizing.
+- Avoid blocking I/O (e.g., synchronous DB calls) inside async endpoints.
+- Cache intermediate results when using expensive LLM calls or document lookups.

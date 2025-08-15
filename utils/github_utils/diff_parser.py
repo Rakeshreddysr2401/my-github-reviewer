@@ -3,19 +3,20 @@
 import re
 from typing import List
 
-import States.state
+from States.state import File,Change,Chunk
 from utils.logger import get_logger
 from utils.path_utils import normalize_file_path
 
 log = get_logger()
 
-def parse_diff(diff_text: str) -> List[States.File]:
+def parse_diff(diff_text: str) -> List[File]:
     files = []
     current_file = None
     current_chunk = None
     target_line_number = 0
 
-    log.debug("Starting to parse diff...")
+    log.info(
+        "\n---------------------------------------------------------------------------STARTED PARSING DIFF---------------------------------------------------------\n")
     lines = diff_text.splitlines()
     line_index = 0
     in_binary_file = False
@@ -38,24 +39,26 @@ def parse_diff(diff_text: str) -> List[States.File]:
                 files.append(current_file)
                 log.debug(f"Added file to list: {current_file.to_file} with {len(current_file.chunks)} chunks")
 
-            current_file = States.File()
+            #Starting New File
+            current_file = File()
             parts = line.split()
             if len(parts) >= 3:
                 if parts[2].startswith("a/"):
                     current_file.from_file = parts[2]
                 if len(parts) > 3 and parts[3].startswith("b/"):
                     current_file.to_file = parts[3]
-
+        #Adding From and To File
         elif line.startswith("--- ") and current_file:
             current_file.from_file = line[4:].strip()
 
         elif line.startswith("+++ ") and current_file:
             current_file.to_file = line[4:].strip()
-
+        #Adding Some File Related Information
+        #Adding New Chunk
         elif line.startswith("@@") and not in_binary_file and current_file:
             if current_chunk:
                 current_file.chunks.append(current_chunk)
-            current_chunk = States.Chunk()
+            current_chunk = Chunk()
             current_chunk.content = line
 
             match = re.match(r'@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@', line)
@@ -67,17 +70,19 @@ def parse_diff(diff_text: str) -> List[States.File]:
                 current_chunk.source_start = 1
                 current_chunk.target_start = 1
                 target_line_number = 1
-
+        #Adding Changes to Chunk
         elif current_chunk and current_file and not in_binary_file:
             current_chunk.content += "\n" + line
 
             if line.startswith(" ") or line.startswith("+"):
-                change = States.Change(content=line, line_number=target_line_number)
+                change = Change(content=line, line_number=target_line_number)
                 current_chunk.changes.append(change)
+                current_chunk.formatted_chunk.append(f"{target_line_number}{line}")
                 target_line_number += 1
             elif line.startswith("-"):
-                change = States.Change(content=line)
+                change = Change(content=line)
                 current_chunk.changes.append(change)
+                current_chunk.formatted_chunk.append(f"{line}")
 
         line_index += 1
 

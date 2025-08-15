@@ -1,5 +1,5 @@
 import json
-from services.pr_details import get_pr_details, PRDetails
+from services.git_services.get_pr_details import get_pr_details, PRDetails
 
 def test_get_pr_details(monkeypatch, tmp_path):
     mock_event = {

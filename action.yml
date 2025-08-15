@@ -1,19 +1,59 @@
 name: "GitHub PR Reviewer"
 description: "Reviews pull requests using OpenAI"
+author: "Rakesh Reddy"
 inputs:
-  openai_api_key:
+  OPENAI_API_KEY:
     description: "Your OpenAI API Key"
     required: true
-  github_token:
+  GITHUB_TOKEN:
     description: "GitHub token to access repo and comment"
     required: true
+  GITHUB_EVENT_PATH:
+    description: "Path to the GitHub event JSON file"
+    required: true
+  EXCLUDE:
+    description: "Comma-separated list of files to exclude from review"
+    required: false
+    default: ""
+  PULL_NUMBER:
+    description: "Pull request number to review"
+    required: true
+  REPOSITORY:
+    description: "Repository in the format owner/repo"
+    required: true
+    default: "${{ github.repository }}"
+  PROVIDER:
+    description: "The provider to use (e.g., openai,anthropic,gemini)"
+    required: false
+    default: "openai"
+  MODEL:
+    description: "The model to use (e.g., gpt-4o-mini,gpt-4o,claude-3-5-sonnet,claude-3-opus)"
+    required: false
+    default: "gpt-4o"
+  TEMPERATURE:
+    description: "Temperature for the model (0.0 for deterministic, 1.0 for creative)"
+    required: false
+    default: "0.5"
+  USE_VECTORSTORE:
+    description: "Use vector store for specific guidelines"
+    required: false
+    default: "false"
+  MAX_LOOP:
+    description: "For Feedback Agent and Reviewer Agent to run in loop"
+    required: false
+    default: "2"
+  MODE:
+    description: "Mode of operation (e.g., reply_mode, initial_review)"
+    required: false
+    default: "initial_review"
+
 runs:
   using: "composite"
   steps:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.13"
 
     - name: Install dependencies
       run: pip install -r ${{ github.action_path }}/requirements.txt
@@ -23,5 +63,13 @@ runs:
       run: python ${{ github.action_path }}/main.py
       shell: bash
       env:
-        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
-        GITHUB_TOKEN: ${{ inputs.github_token }}
+        OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        PULL_NUMBER: ${{ inputs.PULL_NUMBER }}
+        REPOSITORY: ${{ inputs.REPOSITORY }}
+        MODEL: ${{ inputs.MODEL }}
+        PROVIDER: ${{ inputs.PROVIDER }}
+        TEMPERATURE: ${{ inputs.TEMPERATURE }}
+        USE_VECTORSTORE: ${{ inputs.USE_VECTORSTORE }}
+        MAX_LOOP: ${{inputs.MAX_LOOP}}
+        MODE: ${{ inputs.MODE }}

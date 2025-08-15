@@ -12,12 +12,12 @@ def get_exclude_patterns_from_env(env_var: str = "INPUT_EXCLUDE") -> List[str]:
     raw = os.environ.get(env_var, "")
     if raw.strip():
         patterns = [p.strip() for p in raw.split(",") if p.strip()]
-        log.debug(f"Processed exclude patterns: {patterns}")
+        log.debug(f"Processed exclude file patterns: {patterns}")
         return patterns
     return []
 
 
-def filter_files_by_exclude_patterns(files: List[File], exclude_patterns: List[str]) -> List[File]:
+def filter_files_by_exclude_patterns(files: List[File],exclude_patterns:List[str]=get_exclude_patterns_from_env()) -> List[File]:
     filtered = []
     for file in files:
         file_path = file.to_file

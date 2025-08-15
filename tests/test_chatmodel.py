@@ -1,7 +1,7 @@
 import os
 import pytest
 from dotenv import load_dotenv
-from services.chatmodel import get_ai_response
+from services.model_services.chatmodel import get_ai_response
 
 # Load .env file to get OPENAI_API_KEY and OPENAI_MODEL
 load_dotenv()

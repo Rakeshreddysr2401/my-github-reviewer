@@ -1,7 +1,7 @@
 # services/get_diff.py
 import os
 import requests
-from services.github_client import gh
+from services.git_services.get_pr_details import PRDetails
 from utils.logger import get_logger
 
 log = get_logger()
@@ -9,28 +9,23 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 
 
-def get_diff(owner: str, repo_name: str, pull_number: int) -> str:
+def get_diff(pr_details:PRDetails) -> str:
     """
     Fetches the raw .diff of a pull request from GitHub.
     """
-    full_repo_name = f"{owner}/{repo_name}"
-    log.debug(f"Attempting to fetch diff for PR #{pull_number} from {full_repo_name}")
-
+    log.info(
+        "\n---------------------------------------------------------------------------Fetching Git Diff for the PR---------------------------------------------------------\n")
+    full_repo_name = f"{pr_details.owner}/{pr_details.repo}"
+    log.info(f"Attempting to fetch diff for PR #{pr_details.pull_number} from {full_repo_name}")
     try:
-        repo = gh.get_repo(full_repo_name)
-        pr = repo.get_pull(pull_number)
-        log.debug(f"Successfully retrieved PR: {pr.title}")
-
-        api_url = f"https://api.github.com/repos/{full_repo_name}/pulls/{pull_number}.diff"
+        api_url = f"https://api.github.com/repos/{full_repo_name}/pulls/{pr_details.pull_number}.diff"
         headers = {
             'Authorization': f'Bearer {GITHUB_TOKEN}',
             'Accept': 'application/vnd.github.v3.diff'
         }
-
         log.debug(f"Making API request to: {api_url}")
         response = requests.get(api_url, headers=headers)
         log.debug(f"GitHub API response status code: {response.status_code}")
-
         if response.status_code == 200:
             diff = response.text
             log.debug(f"Retrieved diff of length: {len(diff)} characters")
